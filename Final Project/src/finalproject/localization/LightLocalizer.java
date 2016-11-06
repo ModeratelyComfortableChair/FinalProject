@@ -1,4 +1,4 @@
-package localization;
+package finalproject.localization;
 
 public class LightLocalizer implements Localizer {
 

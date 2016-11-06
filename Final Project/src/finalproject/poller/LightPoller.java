@@ -1,4 +1,4 @@
-package poller;
+package finalproject.poller;
 
 import lejos.robotics.SampleProvider;
 
