@@ -17,8 +17,9 @@ public class Odometer extends Thread {
 
 	// default constructor
 	public Odometer(EV3LargeRegulatedMotor leftMotor,EV3LargeRegulatedMotor rightMotor, double wheelRadius, double wheelBase) {
-		this.leftMotor = leftMotor;
-		this.rightMotor = rightMotor;
+		EV3LargeRegulatedMotor[] motors = this.odo.getMotors();
+		this.leftMotor = motors[0];
+		this.rightMotor = motors[1];
 		this.x = 0.0;
 		this.y = 0.0;
 		this.theta = 0.0;
