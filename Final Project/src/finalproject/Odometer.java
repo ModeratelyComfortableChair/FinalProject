@@ -1,8 +1,5 @@
 package finalproject;
 
-
-
-
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
 public class Odometer extends Thread {
@@ -10,7 +7,8 @@ public class Odometer extends Thread {
 	private double x, y, theta, dY, dX, deltaD, deltaT;
 	private int leftMotorTachoCount, rightMotorTachoCount;
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
-	private double nowTachoL, nowTachoR, distL, distR, wheelRadius, wheelBase;
+	private double nowTachoL, nowTachoR, distL, distR;
+	public double wheelRadius, wheelBase;
 	// odometer update period, in ms
 	private static final long ODOMETER_PERIOD = 25;
 
@@ -158,6 +156,18 @@ public class Odometer extends Thread {
 		}
 	}
 
+	
+	// accessors to motors
+	public EV3LargeRegulatedMotor [] getMotors() {
+		return new EV3LargeRegulatedMotor[] {this.leftMotor, this.rightMotor};
+	}
+	public EV3LargeRegulatedMotor getLeftMotor() {
+		return this.leftMotor;
+	}
+	public EV3LargeRegulatedMotor getRightMotor() {
+		return this.rightMotor;
+	}
+	
 	/**
 	 * @return the leftMotorTachoCount
 	 */
@@ -189,5 +199,4 @@ public class Odometer extends Thread {
 			this.rightMotorTachoCount = rightMotorTachoCount;	
 		}
 	}
-
 }

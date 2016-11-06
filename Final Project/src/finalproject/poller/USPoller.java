@@ -3,9 +3,11 @@ package finalproject.poller;
 import lejos.robotics.SampleProvider;
 
 public class USPoller extends Poller {
-
 	
-	public USPoller(SampleProvider sensor, float[] data) {
+	private UltrasonicController cont;
+	private int distance;
+	
+	public USPoller(SampleProvider sensor, float[] data, UltrasonicController cont) {
 		super(sensor, data);
 	}
 
@@ -13,6 +15,13 @@ public class USPoller extends Poller {
 	public float getSensorInformation() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+	
+	public double readUSDistance() {
+		return this.distance;
+	}
+	public void processUSData(double distance) {
+		//TODO:
 	}
 
 }
