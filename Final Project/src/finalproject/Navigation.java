@@ -18,13 +18,18 @@ public class Navigation {
 	
 
 	public Navigation(Odometer odo){
+		//get Odometer
+		this.odo = odo;
+				
+		//get Motors
 		EV3LargeRegulatedMotor[] motors = this.odo.getMotors();
 		this.leftMotor = motors[0];
 		this.rightMotor = motors[1];
+		
+		//get parameters
 		this.leftRadius = odo.wheelRadius;
 		this.rightRadius = odo.wheelRadius;
 		this.width = odo.wheelBase;
-		this.odo = odo;
 	}
 
 	
@@ -40,6 +45,8 @@ public class Navigation {
 		leftMotor.backward();
 		rightMotor.backward();
 	}
+	
+	// travel to a Point
 	public void travelTo(double x, double y){
 		if(alert){
 			return;
@@ -64,6 +71,8 @@ public class Navigation {
 		lastPos[1] = y;
 		travelling = false;
 	}
+	
+	//Turn to an Angle
 	public void turnTo(double theta){								
 		turning = true;
 		leftMotor.setSpeed(ROTATE_SPEED);									//Rotate one spot
@@ -74,13 +83,18 @@ public class Navigation {
 		turning = false;													//Adjust orientation
 
 	}
+	
+	
 	private static int convertDistance(double radius, double distance) {
 		return (int) ((180.0 * distance) / (Math.PI * radius));
 	}
 
+	
 	private static int convertAngle(double radius, double width, double angle) {
 		return convertDistance(radius, Math.PI * width * angle / 360.0);
 	}
+	
+	//
 	private static int getAngle(double x1, double y1, double x2, double y2, int orientation){
 		double diffX = x2 - x1;
 		double diffY = y2 - y1;
@@ -123,35 +137,46 @@ public class Navigation {
 		return angle;
 
 	}
+	
+	//
 	private static double getDistance(double x1, double y1, double x2, double y2){
 		double diffX = x2 - x1;
 		double diffY = y2 - y1;
 
 		return Math.sqrt(diffX*diffX + diffY*diffY);
 	}
+	
+	//
 	public void setAlert( boolean alert ){
 		this.alert = alert;
 	}
+
+	//
 	public boolean getAlert(){
 		return alert;
 	}
+	
+	//Getter method
 	public boolean getControl(){
 		return control;
 	}
+	
+	//Setter method
 	public void setControl(boolean control){
 		this.control = control;
 	}
 
-
+	//Getter method, Return value of turning
 	public boolean isTurning() {
 		return turning;
 	}
 
-
+	//Setter method
 	public void setTurning(boolean turning) {
 		this.turning = turning;
 	}
 
+	//
 	public void rotateOnSpot(int rotateSpeed){
 		int rotateSpeedAbs = Math.abs(rotateSpeed);
 		leftMotor.setSpeed(rotateSpeedAbs);									
@@ -168,46 +193,61 @@ public class Navigation {
 		return;
 	}
 
+	//Stops both motors
 	public void stopMotors(){
 		leftMotor.stop(true);
 		rightMotor.stop();
 		return;
 	}
 
+	//Set X and Y components
 	public void setXY(double x, double y){
 		lastPos[0] = x;
 		lastPos[1] = y;
 	}
+	
+	//Setter method for orientation
 	public void setOrientation(int orientation){
 		this.orientation = orientation;
 	}
+	
+	//Getter method for orientation
 	public int getOrientation(){
 		return orientation;
 	}
 
+	//Getter method for value of travelling
 	public boolean isTravelling() {
 		return travelling;
 	}
 
+	//Setter method for travelling
 	public void setTravelling(boolean travelling) {
 		this.travelling = travelling;
 	}
 
+	//
 	public boolean allowAlert() {
 		return allowAlert;
 	}
+	
+	//
 	public void getOdometerInfo(){
 		setXY(odo.getX(), odo.getY());
 		setOrientation((int)((180 / Math.PI)*odo.getTheta()));
 	}
-
+	
+	//
 	public boolean isAvoiding() {
 		return avoiding;
 	}
 
+	//
 	public void setAvoiding(boolean avoiding) {
 		this.avoiding = avoiding;
 	}
+	
+	//
 	public String getHeading(){
 		if((orientation >=0 && orientation <= 10) || (orientation <= 360 && orientation >= 350)){
 			return "POS_Y";
