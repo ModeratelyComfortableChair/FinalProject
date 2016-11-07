@@ -15,6 +15,7 @@ public class LocalizationMaster {
 	private Localizer usLocalizer, lightLocalizer;
 	
 	/**
+	 * Constructor
 	 * 
 	 * @param usLocalizer
 	 * @param lightLocalizer
