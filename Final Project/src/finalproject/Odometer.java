@@ -17,6 +17,7 @@ public class Odometer extends Thread {
 
 	// default constructor
 	/**
+	 * Constructor
 	 * 
 	 * @param leftMotor
 	 * @param rightMotor
@@ -36,7 +37,9 @@ public class Odometer extends Thread {
 
 	// run method (required for Thread)
 	/**
+	 * Method that extends from Thread class
 	 * 
+	 * Updates X, Y and Theta values of Odometer
 	 */
 	public void run() {
 		long updateStart, updateEnd;
@@ -46,15 +49,9 @@ public class Odometer extends Thread {
 
 		while (true) {
 			updateStart = System.currentTimeMillis();
-			//TODO put (some of) your odometer code here
-
+			
 			synchronized (lock) {
-				/**
-				 * Don't use the variables x, y, or theta anywhere but here!
-				 * Only update the values of x, y, and theta in this block. 
-				 * Do not perform complex math
-				 * 
-				 */
+
 				nowTachoL = leftMotor.getTachoCount();
 				nowTachoR = rightMotor.getTachoCount();
 				distL = Math.PI*wheelRadius*(nowTachoL - leftMotorTachoCount) / 180;
@@ -72,11 +69,7 @@ public class Odometer extends Thread {
 				dX = deltaD * Math.sin(theta);						// compute X component of displacement
 				dY = deltaD * Math.cos(theta);						// compute Y component of displacement
 				x = x + dX;											// update estimates of X and Y position
-				y = y + dY;
-				
-				
-				
-				 //TODO replace example value
+				y = y + dY;				
 			}
 
 			// this ensures that the odometer only runs once every period
@@ -96,9 +89,11 @@ public class Odometer extends Thread {
 	// accessors
 	
 	/**
+	 * This method gets the X, Y, Theta of the Robot and
+	 * stores it in an array.
 	 * 
-	 * @param position
-	 * @param update
+	 * @param position - Array that will store X, Y, Theta
+	 * @param update - Array of booleans
 	 */
 	public void getPosition(double[] position, boolean[] update) {
 		// ensure that the values don't change while the odometer is running
@@ -111,7 +106,13 @@ public class Odometer extends Thread {
 				position[2] = theta;
 		}
 	}
+	
 
+	/**
+	 * This method gets the X component
+	 * 
+	 * @return the X component of Odometer
+	 */
 	public double getX() {
 		double result;
 
@@ -122,6 +123,11 @@ public class Odometer extends Thread {
 		return result;
 	}
 
+	/**
+	 * This method gets the Y component
+	 * 
+	 * @return the Y component of Odometer
+	 */
 	public double getY() {
 		double result;
 
@@ -132,6 +138,11 @@ public class Odometer extends Thread {
 		return result;
 	}
 
+	/**
+	 * This method gets the Theta component
+	 * 
+	 * @return the Theta component of Odometer
+	 */
 	public double getTheta() {
 		double result;
 
@@ -143,6 +154,12 @@ public class Odometer extends Thread {
 	}
 
 	// mutators
+	/**
+	 * This method sets the X, Y, Theta of the Robot
+	 * 
+	 * @param position - Array containing updated values
+	 * @param update - Array of booleans
+	 */
 	public void setPosition(double[] position, boolean[] update) {
 		// ensure that the values don't change while the odometer is running
 		synchronized (lock) {
@@ -155,17 +172,33 @@ public class Odometer extends Thread {
 		}
 	}
 
+	/**
+	 * This method sets the X component of the Odometer
+	 * 
+	 * @param x - X component of the Odometer
+	 */
 	public void setX(double x) {
 		synchronized (lock) {
 			this.x = x;
 		}
 	}
+	
+	/**
+	 * This method sets the Y component of the Odometer
+	 * 
+	 * @param y - Y component of the Odometer
+	 */
 	public void setY(double y) {
 		synchronized (lock) {
 			this.y = y;
 		}
 	}
 
+	/**
+	 * This method sets the Theta component of the Odometer
+	 * 
+	 * @param theta - Theta component of the Odometer
+	 */
 	public void setTheta(double theta) {
 		synchronized (lock) {
 			this.theta = theta;
@@ -174,17 +207,36 @@ public class Odometer extends Thread {
 
 	
 	// accessors to motors
+	/**
+	 * This method returns both motors variables.
+	 * 
+	 * @return leftMotor and rightMotor variables
+	 */
 	public EV3LargeRegulatedMotor [] getMotors() {
 		return new EV3LargeRegulatedMotor[] {this.leftMotor, this.rightMotor};
 	}
+	
+	/**
+	 * This method returns the leftMotor variable
+	 * 
+	 * @return leftMotor variable
+	 */
 	public EV3LargeRegulatedMotor getLeftMotor() {
 		return this.leftMotor;
 	}
+	
+	/**
+	 * This method returns the rightMotor variable
+	 * 
+	 * @return rightMotor variable
+	 */
 	public EV3LargeRegulatedMotor getRightMotor() {
 		return this.rightMotor;
 	}
 	
 	/**
+	 * This method returns the leftMotorTachoCount
+	 * 
 	 * @return the leftMotorTachoCount
 	 */
 	public int getLeftMotorTachoCount() {
@@ -192,7 +244,9 @@ public class Odometer extends Thread {
 	}
 
 	/**
-	 * @param leftMotorTachoCount the leftMotorTachoCount to set
+	 * This method sets the leftMotorTachoCount
+	 * 
+	 * @param leftMotorTachoCount - the leftMotorTachoCount to set
 	 */
 	public void setLeftMotorTachoCount(int leftMotorTachoCount) {
 		synchronized (lock) {
@@ -201,6 +255,8 @@ public class Odometer extends Thread {
 	}
 
 	/**
+	 * This method returns the rightMotorTachoCount
+	 * 
 	 * @return the rightMotorTachoCount
 	 */
 	public int getRightMotorTachoCount() {
@@ -208,7 +264,9 @@ public class Odometer extends Thread {
 	}
 
 	/**
-	 * @param rightMotorTachoCount the rightMotorTachoCount to set
+	 * This method sets the rightMotorTachoCount
+	 * 
+	 * @param rightMotorTachoCount - the rightMotorTachoCount to set
 	 */
 	public void setRightMotorTachoCount(int rightMotorTachoCount) {
 		synchronized (lock) {
