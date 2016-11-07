@@ -3,6 +3,17 @@
 
 package finalproject;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
+
+/**
+ * Navigation handles all movement of the Robot's wheel motors. No class can move the robot
+ * unless it access the methods through the nav class.
+ * 
+ * @author Jerome Marfleet
+ * @author Yu-Yueh Liu
+ * @version 1.0
+ * @since 2016-11-06
+ *
+ */
 public class Navigation {
 
 	private static final int FORWARD_SPEED = 70;
@@ -15,38 +26,52 @@ public class Navigation {
 	private Odometer odo;
 	private double leftRadius, rightRadius, width;
 	private boolean alert, turning, control, travelling, allowAlert, avoiding;
-	
 
+	/**
+	 * Constructor
+	 * @param odo - Robot's Odometer
+	 */
 	public Navigation(Odometer odo){
 		//get Odometer
 		this.odo = odo;
-				
+
 		//get Motors
 		EV3LargeRegulatedMotor[] motors = this.odo.getMotors();
 		this.leftMotor = motors[0];
 		this.rightMotor = motors[1];
-		
+
 		//get parameters
 		this.leftRadius = odo.wheelRadius;
 		this.rightRadius = odo.wheelRadius;
 		this.width = odo.wheelBase;
 	}
 
-	
+	/**
+	 * Sets both wheels to FORWARD_SPEED and drives forward
+	 */
 	public void driveForward(){
 		leftMotor.setSpeed(FORWARD_SPEED);									//Set Wheel speeds
 		rightMotor.setSpeed(FORWARD_SPEED);
 		leftMotor.forward();
 		rightMotor.forward();
 	}
+
+	/**
+	 * Sets both wheels to BACKWARD_SPEED and drives backward
+	 */
 	public void driveBackward(){
 		leftMotor.setSpeed(FORWARD_SPEED);									//Set Wheel speeds
 		rightMotor.setSpeed(FORWARD_SPEED);
 		leftMotor.backward();
 		rightMotor.backward();
 	}
-	
-	// travel to a Point
+
+	/**
+	 * travelTo takes in a desired x and y position, and Moves the robot to that position
+	 * 
+	 * @param x - desired x position
+	 * @param y - desired y position
+	 */
 	public void travelTo(double x, double y){
 		if(alert){
 			return;
@@ -71,8 +96,12 @@ public class Navigation {
 		lastPos[1] = y;
 		travelling = false;
 	}
-	
-	//Turn to an Angle
+
+	/**
+	 * Rotates the robot about a given angle, theta
+	 * 
+	 * @param theta - angle of turn
+	 */
 	public void turnTo(double theta){								
 		turning = true;
 		leftMotor.setSpeed(ROTATE_SPEED);									//Rotate one spot
@@ -83,18 +112,44 @@ public class Navigation {
 		turning = false;													//Adjust orientation
 
 	}
-	
-	
+
+	/**
+	 * Takes a radius and distance double, and returns the needed angle of rotation
+	 * for the wheel motors in order for the robot to reach given distance.
+	 * 
+	 * @param radius - radius of robot tire
+	 * @param distance - wheelbase width of the robot
+	 * @return - integer value representing angle of tire rotation
+	 */
 	private static int convertDistance(double radius, double distance) {
 		return (int) ((180.0 * distance) / (Math.PI * radius));
 	}
 
-	
+	/**
+	 * 
+	 * 
+	 * @param radius - radius of robot tire
+	 * @param width - Wheel-base width of the robot
+	 * @param angle - desired rotation of the robot
+	 * @return a call for convertDistance, which returns an integer
+	 */
 	private static int convertAngle(double radius, double width, double angle) {
 		return convertDistance(radius, Math.PI * width * angle / 360.0);
 	}
-	
-	
+
+	/**
+	 * getAngle takes in the current x-y position and orientation of the robot, and the
+	 * x-y position of a desired destination. The method returns the minimum turning angle
+	 * required for the robot to face the new position
+	 * 
+	 * @param x1 - Initial x position
+	 * @param y1 - Initial y position
+	 * @param x2 - Final x position
+	 * @param y2 - Final y position
+	 * @param orientation - current angle of the robot
+	 * @return integer of the angle needed to rotate in order to face new position
+	 */
+
 	private static int getAngle(double x1, double y1, double x2, double y2, int orientation){
 		double diffX = x2 - x1;
 		double diffY = y2 - y1;
@@ -137,7 +192,7 @@ public class Navigation {
 		return angle;
 
 	}
-	
+
 	//
 	private static double getDistance(double x1, double y1, double x2, double y2){
 		double diffX = x2 - x1;
@@ -145,38 +200,78 @@ public class Navigation {
 
 		return Math.sqrt(diffX*diffX + diffY*diffY);
 	}
-	
-	//
+
+	/**
+	 * Setter method for alert property
+	 * @param alert - boolean to be set as new alert
+	 */
 	public void setAlert( boolean alert ){
 		this.alert = alert;
 	}
 
-	//
+	/**
+	 * Getter method for alert property
+	 * @return alert boolean
+	 */
 	public boolean getAlert(){
 		return alert;
 	}
-	
-	//Getter method
-	public boolean getControl(){
-		return control;
-	}
-	
-	//Setter method
+
+	/**
+	 * Setter method for control property
+	 * @param control - boolean to be set as new control
+	 */
 	public void setControl(boolean control){
 		this.control = control;
 	}
 
-	//Getter method, Return value of turning
-	public boolean isTurning() {
-		return turning;
+	/**
+	 * Getter method for control property
+	 * @return control boolean
+	 */
+	public boolean getControl(){
+		return control;
 	}
 
-	//Setter method
+	/**
+	 * Setter method for turning property
+	 * @param turning - boolean to be set as new turning
+	 */
 	public void setTurning(boolean turning) {
 		this.turning = turning;
 	}
 
-	//
+	/**
+	 * Getter method for control property
+	 * @return control boolean
+	 */
+	public boolean isTurning() {
+		return turning;
+	}
+
+	
+	/**
+	 * Setter method for the traveling property
+	 * @param traveling - boolean to be new traveling
+	 */
+	public void setTraveling(boolean traveling) {
+		this.travelling = traveling;
+	}
+
+
+	/**
+	 * Getter method for the traveling property
+	 * @return travelling boolean
+	 */
+	public boolean isTravelling() {
+		return travelling;
+	}
+
+
+	/**
+	 * Rotates the robot on spot at a given speed
+	 * @param rotateSpeed - speed for wheels to rotate 
+	 */
 	public void rotateOnSpot(int rotateSpeed){
 		int rotateSpeedAbs = Math.abs(rotateSpeed);
 		leftMotor.setSpeed(rotateSpeedAbs);									
@@ -193,61 +288,77 @@ public class Navigation {
 		return;
 	}
 
-	//Stops both motors
+	/**
+	 * Shuts off both motors. Will not return until motors have stopped.
+	 */
 	public void stopMotors(){
 		leftMotor.stop(true);
 		rightMotor.stop();
 		return;
 	}
 
-	//Set X and Y components
+	/**
+	 * Setter method for the x and y position
+	 * @param x - new x position
+	 * @param y - new y position
+	 */
 	public void setXY(double x, double y){
 		lastPos[0] = x;
 		lastPos[1] = y;
 	}
-	
-	//Setter method for orientation
+
+	/**
+	 * Setter method for the orientation (Angle) of the robot
+	 * @param orientation - integer to be set as new orietation
+	 */
 	public void setOrientation(int orientation){
 		this.orientation = orientation;
 	}
-	
-	//Getter method for orientation
+
+	/**
+	 * Getter method for the orientation integer
+	 * @return the orientation integer
+	 */
 	public int getOrientation(){
 		return orientation;
 	}
 
-	//Getter method for value of travelling
-	public boolean isTravelling() {
-		return travelling;
-	}
-
-	//Setter method for travelling
-	public void setTravelling(boolean travelling) {
-		this.travelling = travelling;
-	}
-
-	//
+	/**
+	 * Getter method for the allowAlert boolean
+	 * @return the allowAlert method
+	 */
 	public boolean allowAlert() {
 		return allowAlert;
 	}
-	
-	//
+
+	/**
+	 * updates the x, y, and orientation values of Navigation with the odometer values.
+	 */
 	public void getOdometerInfo(){
 		setXY(odo.getX(), odo.getY());
 		setOrientation((int)((180 / Math.PI)*odo.getTheta()));
 	}
-	
-	//
+
+	/**
+	 * Getter method for the avoiding boolean
+	 * @return the avoiding boolean
+	 */
 	public boolean isAvoiding() {
 		return avoiding;
 	}
 
-	//
+	/**
+	 * Setter Method for the avoiding boolean
+	 * @param avoiding - the avoiding boolean
+	 */
 	public void setAvoiding(boolean avoiding) {
 		this.avoiding = avoiding;
 	}
-	
-	//
+
+	/**
+	 * Returns the orientation of the robot in terms of a String.
+	 * @return String representation of the orientation
+	 */
 	public String getHeading(){
 		if((orientation >=0 && orientation <= 10) || (orientation <= 360 && orientation >= 350)){
 			return "POS_Y";

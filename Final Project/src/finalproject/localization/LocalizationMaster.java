@@ -15,6 +15,11 @@ public class LocalizationMaster {
 	private Localizer usLocalizer, lightLocalizer;
 	
 	/**
+	 * Constructor
+	 * 
+	 * @param usLocalizer
+	 * @param lightLocalizer
+	 */
 	public LocalizationMaster(USLocalizer usLocalizer, LightLocalizer lightLocalizer){
 		this.usLocalizer = usLocalizer;
 		this.lightLocalizer = lightLocalizer;
