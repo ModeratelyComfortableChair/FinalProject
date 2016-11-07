@@ -1,10 +1,9 @@
 package finalproject;
 import lejos.hardware.Button;
 
-public class Escape extends Thread{
+public class Escape {
 
-	@Override
-	public void run(){
+	public static void testForEscape(){
 		while(Button.waitForAnyEvent() != Button.ID_ESCAPE);
 		System.exit(-1);
 	}

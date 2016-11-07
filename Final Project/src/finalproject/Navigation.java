@@ -94,7 +94,7 @@ public class Navigation {
 		return convertDistance(radius, Math.PI * width * angle / 360.0);
 	}
 	
-	//
+	
 	private static int getAngle(double x1, double y1, double x2, double y2, int orientation){
 		double diffX = x2 - x1;
 		double diffY = y2 - y1;

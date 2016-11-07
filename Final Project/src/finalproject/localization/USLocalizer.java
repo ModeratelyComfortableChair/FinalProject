@@ -2,9 +2,24 @@ package finalproject.localization;
 
 import finalproject.Navigation;
 import finalproject.Odometer;
+import finalproject.poller.USPoller;
 import lejos.hardware.Sound;
-import lejos.robotics.SampleProvider;
+import lejos.hardware.lcd.LCD;
 
+
+/**
+ * The USLocalizer performs localization for the EV3 Robot using an ultrasonic sensor.
+ * With the robot placed at an unspecified angle within a corner tile, the USLocalizer
+ * will rotate the EV3 robot until and latch the angles at which the sensor detects
+ * the walls with respect to the FALLING_EDGE technique discussed in class. Afterwards,
+ * it will the orientation to 0 degrees, and update the odometer.
+ * 
+ * @author Jerome Marfleet
+ * @author Yu-Yueh Liu
+ * @version 1.0
+ * @since 2016-11-06
+ *
+ */
 public class USLocalizer implements Localizer{
 
 	public enum LocalizationType { FALLING_EDGE, RISING_EDGE };
@@ -13,43 +28,49 @@ public class USLocalizer implements Localizer{
 	public static final double MAX_DISTANCE = 40;					//Distance at which to stop and latch angle
 	public static final double SPEED_BOUNDARY = 60;					//Distance at which to switch speeds
 	public static final double MOMENT = 6.5;						//Distance between US sensor and center of rotation
-	public static final double TILE_WIDTH = 30.48;			
+	public static final double TILE_WIDTH_CM = 30.48;				//Width of distance	
+	public static final double FILTER = 200;						//USPoller max readable distance
 	
 	private Odometer odo;
-	private SampleProvider usSensor;
-	private float[] usData;
-	private LocalizationType locType;
 	private Navigation nav;
-	public USLocalizer(Odometer odo,  SampleProvider usSensor, float[] usData,
-			LocalizationType locType, Navigation nav) {
+	private USPoller usPoller;
+	/**
+	 * This constructs
+	 * @param odo - The robot's odometer.
+	 * @param usPoller - The ultrasonic poller corresponding to the sensor used for localization
+	 * @param nav - The Navigation class is required to move the robot.
+	 */
+	public USLocalizer(Odometer odo, USPoller usPoller, Navigation nav) {
 		this.odo = odo;
-		this.usSensor = usSensor;
-		this.usData = usData;
-		this.locType = locType;
 		this.nav = nav;
+		this.usPoller = usPoller;
 	}
-	
+	/**
+	 * Performs the necessary angle localization according to the FALLING_EDGE angle correction.
+	 * After, calls positionLocalization.
+	 */
 	@Override
 	public void localize() {
-		double [] pos = new double [3];
 		double angleA = 0;
 		double angleB = 0;
 		double theta;
-		double x;
-		double y;
-		float lastEdge = 1000;
-		float edge;
-		try {Thread.sleep(1000);} catch (InterruptedException e) {}
+		double edge;
+		double lastEdge = 1000;
+		getFilteredData();
+		try {Thread.sleep(3000);} catch (InterruptedException e) {}
 		if(getFilteredData() < MAX_DISTANCE){							//If we start off facing the wall
 				nav.rotateOnSpot((int) HIGH_ROTATION_SPEED);						// keep rotating cw until the robot doesn't see the wall
 				edge = getFilteredData();
+
 				while(edge < MAX_DISTANCE){
-					edge = getFilteredData();
 					if(edge > SPEED_BOUNDARY){
 						nav.rotateOnSpot((int) HIGH_ROTATION_SPEED);
 					} else {
 						nav.rotateOnSpot((int) LOW_ROTATION_SPEED);
 					}
+					LCD.drawString("Distance:         ", 0, 4);
+					LCD.drawString("Distance: " + Integer.toString((int)edge), 0, 4);
+					edge = getFilteredData();
 				}
 				Sound.beep();
 				nav.stopMotors();
@@ -60,12 +81,17 @@ public class USLocalizer implements Localizer{
 			//Now we are definitely not facing the wall
 			nav.rotateOnSpot((int) HIGH_ROTATION_SPEED);
 			edge = getFilteredData();
+
 			while(edge > MAX_DISTANCE ){
 				if(edge > SPEED_BOUNDARY){
 					nav.rotateOnSpot((int) HIGH_ROTATION_SPEED);
 				} else {
 					nav.rotateOnSpot((int) LOW_ROTATION_SPEED);
 				}
+				LCD.drawString("Distance:         ", 0, 4);
+				LCD.drawString("Distance: " + Integer.toString((int)edge), 0, 4);
+
+
 				edge = getFilteredData();
 			}																//Rotate cw until you face a wall
 			Sound.beep();
@@ -91,21 +117,55 @@ public class USLocalizer implements Localizer{
 			angleB =  (180.0/Math.PI)*odo.getTheta();						//Latch second angle
 			try {Thread.sleep(1000);} catch (InterruptedException e) {}
 			
+			//Calculate orientation
 			if(angleA < angleB){
 				theta = (angleB - angleA)/2;
 			} else {
 				theta = (360 - angleA + angleB)/2;
-			}
-			nav.turnTo(135 - theta);										//Calculate orientation, and turn robot until we face 0 degrees
+			}		
+			
 			try {Thread.sleep(1000);} catch (InterruptedException e) {}
 			
-		 
+			//Localize robot with respect to x and y
+			positionLocalization((int)theta);
 	}
-	public float getFilteredData() {
-		usSensor.fetchSample(usData, 0);
-		float distance = Math.abs(usData[0]*100);
-				
-		return Math.min(distance, 200);
+	
+	/**
+	 * positionLocalization is handles calculating the initial x and y position of the robot by
+	 * measuring the distance of the robot and the walls of the corner. Because the orientation
+	 * of the robot must be known beforehand, this method is set to private and only called on
+	 * at the end of localize().
+	 * 
+	 * @param theta - the orientation of the robot after localize() is performed
+	 */
+	private void positionLocalization(int theta){
+		double x, y;
+		
+		nav.turnTo(45 - theta);
+		try {Thread.sleep(2000);} catch (InterruptedException e) {}				//Get X location with respect to wall
+		x = MOMENT - TILE_WIDTH_CM + getFilteredData();
+		
+		nav.turnTo(-90);
+		try {Thread.sleep(2000);} catch (InterruptedException e) {}				//Get Y location with respect to wall
+		y = MOMENT - TILE_WIDTH_CM + getFilteredData();
+		
+		nav.turnTo(180);														//Face forward
+		try {Thread.sleep(2000);} catch (InterruptedException e) {}
+		
+		odo.setPosition(new double [] {x, y, 0}, new boolean [] {true, true, true});		//Update nav and odo, positions.
+		nav.getOdometerInfo();
+	}
+	
+	/**
+	 * Method acts a secondary filter for the USPoller, and is specific to the needs of the
+	 * USLocalizer. In this case, the filter simply takes the minimum of the distance recorded,
+	 * and our FILTER constant.
+	 * 
+	 * @return The filtered distance from the USPoller, as a double.
+	 */
+	public double getFilteredData() {
+		double distance = usPoller.readUSDistance();
+		return Math.min(distance, FILTER);
 	}
 
 		

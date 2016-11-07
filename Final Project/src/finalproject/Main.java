@@ -3,6 +3,9 @@
  */
 package finalproject;
 
+import finalproject.localization.LightLocalizer;
+import finalproject.localization.LocalizationMaster;
+import finalproject.localization.Localizer;
 import finalproject.localization.USLocalizer;
 import finalproject.poller.USPoller;
 import lejos.hardware.Button;
@@ -28,15 +31,33 @@ public class Main {
 	// Ultrasonic sensor port connected to input S2
 	// Color sensor port connected to input S1
 	private static final EV3LargeRegulatedMotor leftMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
-	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
+	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
+	
+	//TODO Replace this with the comments below
+	private static final EV3LargeRegulatedMotor hook = null;
+	private static final EV3MediumRegulatedMotor turner = null;
+	
+	/*
 	private static final EV3LargeRegulatedMotor hook = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
-	private static final EV3MediumRegulatedMotor turner = new EV3MediumRegulatedMotor(LocalEV3.get().getPort("D"));	
+	private static final EV3MediumRegulatedMotor turner = new EV3MediumRegulatedMotor(LocalEV3.get().getPort("B"));	
+	*/
 	private static final Port usPort = LocalEV3.get().getPort("S3");		
-	private static final Port colorPort = LocalEV3.get().getPort("S4");		
+	private static final Port colorPort = LocalEV3.get().getPort("S4");	
+	
+	//TODO initialize other usPorts and colorPorts
+	private static final Port usUpperPort = null;
+	private static final Port leftColorPort = null;
 	
 	public static void main(String[] args) throws InterruptedException {
 		int buttonChoice;
 		int [] a = {4, 25, 500, 7000, 5};	// Array that determines instrument: Piano
+		
+		//Set up Escape thread
+		(new Thread(){
+			public void run(){
+				Escape.testForEscape();
+			}
+		}).start();
 		
 		//Setup ultrasonic sensor
 		// 1. Create a port object attached to a physical port (done above)
@@ -66,8 +87,19 @@ public class Main {
 		Odometer odo = new Odometer(leftMotor, rightMotor, 2.1, 15);
 		OdometryDisplay odometryDisplay = new OdometryDisplay(odo,t);
 		Navigation nav = new Navigation(odo);
-		Search searcher = new Search(odo, nav, turner, hook, colorValue, colorData);
-		usPoller = new USPoller(usValue, usData, searcher);
+		
+		usPoller = new USPoller(usValue, usData);
+		
+		//Localization and it's localizer arguments
+		USLocalizer usLocalizer = new USLocalizer(odo, usPoller, nav);
+		LightLocalizer lightLocalizer = new LightLocalizer();
+		LocalizationMaster localization = new LocalizationMaster(usLocalizer, lightLocalizer);
+		
+		
+		Search searcher = new Search(odo, nav, turner, hook, colorValue, colorData, localization);
+		
+		
+		
 		
 		
 		do {
@@ -96,15 +128,7 @@ public class Main {
 			odometryDisplay.start();
 			usPoller.start();
 			searcher.start();
-		
-			//0.5sec delay
-			Delay.msDelay(500);
-
-			// perform the ultrasonic localization
-			//USLocalizer usl = new USLocalizer(odo, nav, USLocalizer.LocalizationType.FALLING_EDGE, usPoller);
-			//usl.doLocalization();
-//			Victory(a);
-			Delay.msDelay(1000);				
+						
 		}
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
 		System.exit(0);
