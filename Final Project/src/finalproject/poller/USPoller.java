@@ -7,11 +7,11 @@ public class USPoller extends Poller {
 
 	private UltrasonicController cont;
 	private int distance;
+	
 	private static final int REFRESH_TIME_MS = 50;
 
 	public USPoller(SampleProvider sensor, float[] data) {
 		super(sensor, data);
-
 	}
 
 	public void run(){
