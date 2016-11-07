@@ -43,7 +43,11 @@ public class WifiTest {
 
 	private static final String SERVER_IP = "142.157.110.134";
 	private static final int TEAM_NUMBER = 12;
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> refs/remotes/origin/master
 	private static TextLCD LCD = LocalEV3.get().getTextLCD();
 
 	public static void main(String[] args) {
