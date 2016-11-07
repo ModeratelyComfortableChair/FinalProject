@@ -1,28 +1,35 @@
 package finalproject.poller;
 
+import lejos.hardware.lcd.LCD;
 import lejos.robotics.SampleProvider;
 
 public class USPoller extends Poller {
-	
+
 	private UltrasonicController cont;
 	private int distance;
-	
-	public USPoller(SampleProvider sensor, float[] data, UltrasonicController cont) {
-		//super(sensor, data); //what is this for?
-		this.cont=cont;
+
+	private static final int REFRESH_TIME_MS = 50;
+
+	public USPoller(SampleProvider sensor, float[] data) {
+		super(sensor, data);
 	}
 
-	@Override
-	public float getSensorInformation() {
-		// TODO Auto-generated method stub
-		return 0;
+	public void run(){
+		int distance;
+		while (true) {
+			sensor.fetchSample(data,0);							// acquire data
+			distance=(int)(data[0]*100.0);					// extract from buffer, cast to int
+			try { Thread.sleep(50); } catch(Exception e){}		// Poor man's timed sampling
+		}
 	}
-	
+
 	public double readUSDistance() {
 		return this.distance;
 	}
-	public void processUSData(double distance) {
-		//TODO:
+
+	@Override
+	public double filterData(){
+		return 0;
 	}
 
 }

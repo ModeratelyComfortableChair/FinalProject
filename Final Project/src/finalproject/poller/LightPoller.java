@@ -9,8 +9,9 @@ public class LightPoller extends Poller {
 		// TODO Auto-generated constructor stub
 	}
 
+
 	@Override
-	public float getSensorInformation() {
+	public double filterData() {
 		// TODO Auto-generated method stub
 		return 0;
 	}

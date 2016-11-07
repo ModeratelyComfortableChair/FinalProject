@@ -16,6 +16,13 @@ public class Odometer extends Thread {
 	private Object lock;
 
 	// default constructor
+	/**
+	 * 
+	 * @param leftMotor
+	 * @param rightMotor
+	 * @param wheelRadius
+	 * @param wheelBase
+	 */
 	public Odometer(EV3LargeRegulatedMotor leftMotor,EV3LargeRegulatedMotor rightMotor, double wheelRadius, double wheelBase) {
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
@@ -28,6 +35,9 @@ public class Odometer extends Thread {
 	}
 
 	// run method (required for Thread)
+	/**
+	 * 
+	 */
 	public void run() {
 		long updateStart, updateEnd;
 
@@ -84,6 +94,12 @@ public class Odometer extends Thread {
 	}
 
 	// accessors
+	
+	/**
+	 * 
+	 * @param position
+	 * @param update
+	 */
 	public void getPosition(double[] position, boolean[] update) {
 		// ensure that the values don't change while the odometer is running
 		synchronized (lock) {

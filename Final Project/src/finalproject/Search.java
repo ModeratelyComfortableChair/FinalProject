@@ -3,6 +3,7 @@
  */
 package finalproject;
 
+import finalproject.localization.LocalizationMaster;
 import finalproject.poller.UltrasonicController;
 import lejos.hardware.Sound;
 import lejos.hardware.lcd.LCD;
@@ -54,6 +55,8 @@ public class Search extends Thread implements UltrasonicController{
 	public EV3MediumRegulatedMotor turner;
 	public Odometer odo;
     private Navigation nav;
+    private LocalizationMaster localization;
+    private boolean localized = false;
 		
 		
 	// Enum declaration/initialization
@@ -62,7 +65,7 @@ public class Search extends Thread implements UltrasonicController{
 	
 	// Navigation Constructor
 	public Search(Odometer odometer, Navigation nav, EV3MediumRegulatedMotor turner, EV3LargeRegulatedMotor hook, 
-			SampleProvider colorSensor, float[] colorData) {
+			SampleProvider colorSensor, float[] colorData, LocalizationMaster localization) {
 		//Set variables
 		this.xCurrent = 0;
 		this.yCurrent = 0;
@@ -86,6 +89,11 @@ public class Search extends Thread implements UltrasonicController{
 	    //ColorSensor
 	    this.colorProvider = colorSensor;
 		this.colorData = colorData;
+		
+		//Localization
+		this.localization = localization;
+
+		
 	}
 	
 	// Setup Threads
@@ -101,12 +109,21 @@ public class Search extends Thread implements UltrasonicController{
 				LCD.drawString("            ", 0, 5);
 				LCD.drawString("INIT", 0, 5);
 				
+				if(!localized){
+					localization.localize();
+					localized = true;
+				}
+				
+				//Temp to test localization. remove later
+				while(true);
+				/*
 				if(true){ //if some boolean is true
 					state = State.SCAN;
 				}else if(isNavigating()){							//travelTo has been called
 				state = State.TURNING;								//First turn to your destination
-				}
-                break;
+				break;
+				}*/
+                
 			case SCAN:
 				LCD.drawString("            ", 0, 5);
 				LCD.drawString("SCAN", 0, 5);
