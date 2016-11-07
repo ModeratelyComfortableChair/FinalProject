@@ -8,7 +8,8 @@ public class USPoller extends Poller {
 	private int distance;
 	
 	public USPoller(SampleProvider sensor, float[] data, UltrasonicController cont) {
-		super(sensor, data);
+		//super(sensor, data); //what is this for?
+		this.cont=cont;
 	}
 
 	@Override
