@@ -5,7 +5,6 @@ import lejos.robotics.SampleProvider;
 
 public class USPoller extends Poller {
 
-	private UltrasonicController cont;
 	private int distance;
 	private static final int REFRESH_TIME_MS = 50;
 

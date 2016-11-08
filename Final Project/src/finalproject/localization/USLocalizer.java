@@ -22,7 +22,6 @@ import lejos.hardware.lcd.LCD;
  */
 public class USLocalizer implements Localizer{
 
-	public enum LocalizationType { FALLING_EDGE, RISING_EDGE };
 	public static final double LOW_ROTATION_SPEED = 60;				//Speed to rotate while distance < SPEED_BOUNDARY
 	public static final double HIGH_ROTATION_SPEED = 100;			//Speed to rotate while distance > SPEED_BOUNDARY
 	public static final double MAX_DISTANCE = 40;					//Distance at which to stop and latch angle
@@ -163,6 +162,7 @@ public class USLocalizer implements Localizer{
 	 * 
 	 * @return The filtered distance from the USPoller, as a double.
 	 */
+	@Override
 	public double getFilteredData() {
 		double distance = usPoller.readUSDistance();
 		return Math.min(distance, FILTER);

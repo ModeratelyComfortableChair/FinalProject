@@ -7,6 +7,7 @@ import finalproject.localization.LightLocalizer;
 import finalproject.localization.LocalizationMaster;
 import finalproject.localization.Localizer;
 import finalproject.localization.USLocalizer;
+import finalproject.poller.LightPoller;
 import finalproject.poller.USPoller;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
@@ -78,9 +79,7 @@ public class Main {
 		SensorModes colorSensor = new EV3ColorSensor(colorPort);	// colorSensor is the instance
 		SampleProvider colorValue = colorSensor.getMode("RGB");		// colorValue provides samples from this instance
 		float[] colorData = new float[colorValue.sampleSize()];		// colorData is the buffer in which data are returned
-
-		// Setup Ultrasonic Poller									// This thread samples the US and invokes
-		USPoller usPoller = null;							// the selected controller on each cycle
+						
 		
 		// some objects that need to be instantiated
 		final TextLCD t = LocalEV3.get().getTextLCD();
@@ -88,11 +87,12 @@ public class Main {
 		OdometryDisplay odometryDisplay = new OdometryDisplay(odo,t);
 		Navigation nav = new Navigation(odo);
 		
-		usPoller = new USPoller(usValue, usData);
+		USPoller usPoller = new USPoller(usValue, usData);
+		LightPoller lightPoller = new LightPoller(colorValue, colorData);
 		
 		//Localization and it's localizer arguments
 		USLocalizer usLocalizer = new USLocalizer(odo, usPoller, nav);
-		LightLocalizer lightLocalizer = new LightLocalizer();
+		LightLocalizer lightLocalizer = new LightLocalizer(odo, lightPoller, nav);
 		LocalizationMaster localization = new LocalizationMaster(usLocalizer, lightLocalizer);
 		
 		
