@@ -12,6 +12,14 @@ import lejos.hardware.motor.EV3MediumRegulatedMotor;
 import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
+/**
+ * Search will constantly search once the robot finishes Localizing to (0,0)
+ * 
+ * @author Yu-Yueh Liu
+ * @version 1.0
+ * @since 2016-11-07
+ *
+ */
 public class Search extends Thread implements UltrasonicController{
 	// Constants for navigation 
 	private double xCurrent;
@@ -64,6 +72,17 @@ public class Search extends Thread implements UltrasonicController{
 
 	
 	// Navigation Constructor
+	/**
+	 * Constructor 
+	 * 
+	 * @param odometer Odometer Class
+	 * @param nav Navigation Class
+	 * @param turner
+	 * @param hook
+	 * @param colorSensor Color Sensor Object
+	 * @param colorData Data from Color Sensor
+	 * @param localization Localization Class
+	 */
 	public Search(Odometer odometer, Navigation nav, EV3MediumRegulatedMotor turner, EV3LargeRegulatedMotor hook, 
 			SampleProvider colorSensor, float[] colorData, LocalizationMaster localization) {
 		//Set variables
@@ -101,6 +120,11 @@ public class Search extends Thread implements UltrasonicController{
 
 	
 	// Run method
+	/**
+	 * Method that extends from Thread
+	 * This method contains the main State Machine
+	 * that handles the search for styrofoam blocks
+	 */
 	public void run(){
 		State state = State.INIT;
 		while(true){

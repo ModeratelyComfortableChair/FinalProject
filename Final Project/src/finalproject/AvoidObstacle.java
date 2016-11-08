@@ -5,6 +5,16 @@ package finalproject;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
+/**
+ * AvoidObstacle will avoid the Obstacle once the thread is started
+ * until the robot is safe.
+ * 
+ * @author Yu-Yueh Liu
+ * @version 1.0
+ * @since 2016-11-07
+ *
+ */
+
 public class AvoidObstacle extends Thread {
 	
 	//Variable declarations/initializations
@@ -19,6 +29,10 @@ public class AvoidObstacle extends Thread {
 	private boolean safe;
 	
 	//constructor
+	/**
+	 * Constructor
+	 * @param searcher Search class
+	 */
 	public AvoidObstacle(Search searcher) {
 		this.searcher = searcher;
 		this.safe = false;
@@ -29,6 +43,10 @@ public class AvoidObstacle extends Thread {
 	}
 	
 	//obstacle avoidance - get around the blocks
+	/**
+	 * Method that extends from Thread
+	 * This method will run continuously until the robot is safe
+	 */
 	public void run(){
 	}
 

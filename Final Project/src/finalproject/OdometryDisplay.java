@@ -11,6 +11,7 @@ import lejos.hardware.lcd.TextLCD;
  * 
  * @author Jerome Marfleet
  * @author Yu-Yueh Liu
+ * @author Brennan Laforge
  * @version 1.0
  * @since 2016-11-06
  *
