@@ -6,18 +6,38 @@ package finalproject;
 
 import lejos.hardware.lcd.TextLCD;
 
+/** 
+ * OdometryDisplay handles displaying the information from Odometry on the EV3's LCD screen.
+ * 
+ * @author Jerome Marfleet
+ * @author Yu-Yueh Liu
+ * @version 1.0
+ * @since 2016-11-06
+ *
+ */
 public class OdometryDisplay extends Thread {
 	private static final long DISPLAY_PERIOD = 250;
 	private Odometer odometer;
 	private TextLCD t;
 
 	// constructor
+	/**
+	 * Constructor
+	 * 
+	 * @param odometer Robot's odometer
+	 * @param t Robot's LCD
+	 */
 	public OdometryDisplay(Odometer odometer, TextLCD t) {
 		this.odometer = odometer;
 		this.t = t;
 	}
 
 	// run method (required for Thread)
+	/**
+	 * Method that extends from Thread class
+	 * 
+	 * Displays the Robot's X, Y and Theta values of Odometer on the LCD screen
+	 */
 	public void run() {
 		long displayStart, displayEnd;
 		double[] position = new double[3];
@@ -55,6 +75,13 @@ public class OdometryDisplay extends Thread {
 		}
 	}
 	
+	/**
+	 * This method formats a double to a String
+	 * 
+	 * @param x - The double value that is being formatted into a String.
+	 * @param places - The number of decimal places the String will have after the double is formatted.
+	 * @return formatted String
+	 */
 	private static String formattedDoubleToString(double x, int places) {
 		String result = "";
 		String stack = "";
