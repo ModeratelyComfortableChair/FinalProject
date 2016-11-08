@@ -2,6 +2,16 @@ package finalproject;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
+/**
+ * Odometer keeps track of the robot's current position in the X and Y axis 
+ * as well as the current angle Theta
+ * 
+ * @author Jerome Marfleet
+ * @author Yu-Yueh Liu
+ * @version 1.0
+ * @since 2016-11-06
+ *
+ */
 public class Odometer extends Thread {
 	// robot position
 	private double x, y, theta, dY, dX, deltaD, deltaT;
@@ -19,10 +29,10 @@ public class Odometer extends Thread {
 	/**
 	 * Constructor
 	 * 
-	 * @param leftMotor
-	 * @param rightMotor
-	 * @param wheelRadius
-	 * @param wheelBase
+	 * @param leftMotor Variable for the left motor
+	 * @param rightMotor Variable for the right motor
+	 * @param wheelRadius Variable for the wheel radius
+	 * @param wheelBase Variable for the track of the robot
 	 */
 	public Odometer(EV3LargeRegulatedMotor leftMotor,EV3LargeRegulatedMotor rightMotor, double wheelRadius, double wheelBase) {
 		this.leftMotor = leftMotor;
@@ -37,9 +47,7 @@ public class Odometer extends Thread {
 
 	// run method (required for Thread)
 	/**
-	 * Method that extends from Thread class
-	 * 
-	 * Updates X, Y and Theta values of Odometer
+	 * Method that extends from Thread class. Updates X, Y and Theta values of Odometer
 	 */
 	public void run() {
 		long updateStart, updateEnd;
@@ -92,8 +100,8 @@ public class Odometer extends Thread {
 	 * This method gets the X, Y, Theta of the Robot and
 	 * stores it in an array.
 	 * 
-	 * @param position - Array that will store X, Y, Theta
-	 * @param update - Array of booleans
+	 * @param position Array that will store X, Y, Theta
+	 * @param update Array of booleans
 	 */
 	public void getPosition(double[] position, boolean[] update) {
 		// ensure that the values don't change while the odometer is running
@@ -157,8 +165,8 @@ public class Odometer extends Thread {
 	/**
 	 * This method sets the X, Y, Theta of the Robot
 	 * 
-	 * @param position - Array containing updated values
-	 * @param update - Array of booleans
+	 * @param position Array containing updated values
+	 * @param update Array of booleans
 	 */
 	public void setPosition(double[] position, boolean[] update) {
 		// ensure that the values don't change while the odometer is running
@@ -175,7 +183,7 @@ public class Odometer extends Thread {
 	/**
 	 * This method sets the X component of the Odometer
 	 * 
-	 * @param x - X component of the Odometer
+	 * @param x X component of the Odometer
 	 */
 	public void setX(double x) {
 		synchronized (lock) {
@@ -186,7 +194,7 @@ public class Odometer extends Thread {
 	/**
 	 * This method sets the Y component of the Odometer
 	 * 
-	 * @param y - Y component of the Odometer
+	 * @param y Y component of the Odometer
 	 */
 	public void setY(double y) {
 		synchronized (lock) {
@@ -197,7 +205,7 @@ public class Odometer extends Thread {
 	/**
 	 * This method sets the Theta component of the Odometer
 	 * 
-	 * @param theta - Theta component of the Odometer
+	 * @param theta Theta component of the Odometer
 	 */
 	public void setTheta(double theta) {
 		synchronized (lock) {
@@ -246,7 +254,7 @@ public class Odometer extends Thread {
 	/**
 	 * This method sets the leftMotorTachoCount
 	 * 
-	 * @param leftMotorTachoCount - the leftMotorTachoCount to set
+	 * @param leftMotorTachoCount the leftMotorTachoCount to set
 	 */
 	public void setLeftMotorTachoCount(int leftMotorTachoCount) {
 		synchronized (lock) {
@@ -266,7 +274,7 @@ public class Odometer extends Thread {
 	/**
 	 * This method sets the rightMotorTachoCount
 	 * 
-	 * @param rightMotorTachoCount - the rightMotorTachoCount to set
+	 * @param rightMotorTachoCount the rightMotorTachoCount to set
 	 */
 	public void setRightMotorTachoCount(int rightMotorTachoCount) {
 		synchronized (lock) {
