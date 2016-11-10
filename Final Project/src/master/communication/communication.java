@@ -1,3 +1,4 @@
+package master.communication;
 
 /*
 * @author Sean Lawlor
@@ -21,12 +22,12 @@
 import java.io.IOException;
 import java.util.HashMap;
 
-import wifi.WifiConnection;
+import master.wifi.WifiConnection;
 import lejos.hardware.Button;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.TextLCD;
 
-public class WifiTest {
+public class communication {
 	/*
 	 * Example call of the transmission protocol 
 	 * We use System.out.println() instead of LCD printing so that 
@@ -43,11 +44,11 @@ public class WifiTest {
 
 	private static final String SERVER_IP = "192.168.2.17";
 	private static final int TEAM_NUMBER = 12;
-
+	private static String corner;
+	
 	private static TextLCD LCD = LocalEV3.get().getTextLCD();
 
-	public static void main(String[] args) {
-
+	public communication(){
 		LCD.clear();
 
 		/*
@@ -77,14 +78,22 @@ public class WifiTest {
 		 */
 		if (conn != null) {
 			HashMap<String, Integer> t = conn.StartData;
+			
 			if (t == null) {
 				System.out.println("Failed to read transmission");
 			} else {
 				System.out.println("Transmission read:\n" + t.toString());
 			}
-		}
+			if(t.get("BTN") == TEAM_NUMBER){
+				//corner = t.get(BSC);
+				
+			}else if(t.get("CTN") == TEAM_NUMBER){
+				//corner = t.get(CSC);
+			}
+		}		
 		
 
+		
 		// Wait until user decides to end program
 		Button.waitForAnyPress();
 	}
