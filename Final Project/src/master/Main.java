@@ -29,25 +29,25 @@ public class Main {
 	// Static Resources:
 	// Left motor connected to output A
 	// Right motor connected to output D
-	// Ultrasonic sensor port connected to input S2
-	// Color sensor port connected to input S1
 	private static final EV3LargeRegulatedMotor leftMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 	
 	//TODO Replace this with the comments below
-	private static final EV3LargeRegulatedMotor hook = null;
-	private static final EV3MediumRegulatedMotor turner = null;
-	
-	/*
-	private static final EV3LargeRegulatedMotor hook = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
-	private static final EV3MediumRegulatedMotor turner = new EV3MediumRegulatedMotor(LocalEV3.get().getPort("B"));	
-	*/
-	private static final Port usPort = LocalEV3.get().getPort("S3");		
-	private static final Port colorPort = LocalEV3.get().getPort("S4");	
+	private static final EV3LargeRegulatedMotor hook = null;	// = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
+	private static final EV3MediumRegulatedMotor turner = null; //new EV3MediumRegulatedMotor(LocalEV3.get().getPort("B"));	
 	
 	//TODO initialize other usPorts and colorPorts
 	private static final Port usUpperPort = null;
-	private static final Port leftColorPort = null;
+	private static final Port usLowerPort = LocalEV3.get().getPort("S3");
+	private static final Port colorBackPort = LocalEV3.get().getPort("S4");	
+	private static final Port colorLeftPort = null;
+	private static final Port colorRightPort = null;
+	
+	public static final double WHEEL_RADIUS = 2.134;
+	public static final double TRACK = 16.005; 
+	
+	private static Odometer odo;
+
 	
 	public static void main(String[] args) throws InterruptedException {
 		int buttonChoice;
@@ -66,7 +66,7 @@ public class Main {
 		// 3. Create a sample provider instance for the above and initialize operating mode
 		// 4. Create a buffer for the sensor data
 		@SuppressWarnings("resource")							    // Because we don't bother to close this resource
-		SensorModes usSensor = new EV3UltrasonicSensor(usPort);		// usSensor is the instance
+		SensorModes usSensor = new EV3UltrasonicSensor(usLowerPort);		// usSensor is the instance
 		SampleProvider usValue = usSensor.getMode("Distance");	// usDistance provides samples from this instance
 		float[] usData = new float[usValue.sampleSize()];		// usData is the buffer in which data are returned
 
@@ -76,16 +76,16 @@ public class Main {
 		// 3. Create a sample provider instance for the above and initialize operating mode
 		// 4. Create a buffer for the sensor data
 		@SuppressWarnings("resource")
-		SensorModes colorSensor = new EV3ColorSensor(colorPort);	// colorSensor is the instance
+		SensorModes colorSensor = new EV3ColorSensor(colorBackPort);	// colorSensor is the instance
 		SampleProvider colorValue = colorSensor.getMode("RGB");		// colorValue provides samples from this instance
 		float[] colorData = new float[colorValue.sampleSize()];		// colorData is the buffer in which data are returned
 						
 		
 		// some objects that need to be instantiated
 		final TextLCD t = LocalEV3.get().getTextLCD();
-		Odometer odo = new Odometer(leftMotor, rightMotor, 2.1, 15);
+		Odometer odo = new Odometer(leftMotor, rightMotor, TRACK, WHEEL_RADIUS);
 		OdometryDisplay odometryDisplay = new OdometryDisplay(odo,t);
-		Navigation nav = new Navigation(odo);
+		Navigation nav = new Navigation(odo, leftMotor, rightMotor);
 		
 		USPoller usPoller = new USPoller(usValue, usData);
 		LightPoller lightPoller = new LightPoller(colorValue, colorData);

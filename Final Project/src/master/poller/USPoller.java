@@ -13,7 +13,6 @@ public class USPoller extends Poller {
 	}
 
 	public void run(){
-		int distance;
 		while (true) {
 			sensor.fetchSample(data,0);							// acquire data
 			distance=(int)(data[0]*100.0);					// extract from buffer, cast to int
@@ -22,7 +21,8 @@ public class USPoller extends Poller {
 	}
 
 	public double readUSDistance() {
-		return this.distance;
+		
+		return distance;
 	}
 
 	@Override

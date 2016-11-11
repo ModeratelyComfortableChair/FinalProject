@@ -28,8 +28,9 @@ public class LocalizationMaster {
 	/**
 	 * Method calls localize on each individually Localizer instances.
 	 */
+	//TODO un comment light localizer
 	public void localize(){
 		usLocalizer.localize();
-		lightLocalizer.localize();
+		//lightLocalizer.localize();
 	}
 }
