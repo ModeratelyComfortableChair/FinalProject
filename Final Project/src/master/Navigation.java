@@ -31,15 +31,13 @@ public class Navigation {
 	 * Constructor
 	 * @param odo - Robot's Odometer
 	 */
-	public Navigation(Odometer odo){
+	public Navigation(Odometer odo, EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor){
 		//get Odometer
 		this.odo = odo;
 
 		//get Motors
-		EV3LargeRegulatedMotor[] motors = this.odo.getMotors();
-		this.leftMotor = motors[0];
-		this.rightMotor = motors[1];
-
+		this.leftMotor = leftMotor;
+		this.rightMotor = rightMotor;
 		//get parameters
 		this.leftRadius = odo.wheelRadius;
 		this.rightRadius = odo.wheelRadius;

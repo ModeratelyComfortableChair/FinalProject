@@ -34,7 +34,7 @@ public class Odometer extends Thread {
 	 * @param wheelRadius Variable for the wheel radius
 	 * @param wheelBase Variable for the track of the robot
 	 */
-	public Odometer(EV3LargeRegulatedMotor leftMotor,EV3LargeRegulatedMotor rightMotor, double wheelRadius, double wheelBase) {
+	public Odometer(EV3LargeRegulatedMotor leftMotor,EV3LargeRegulatedMotor rightMotor, double wheelBase, double wheelRadius) {
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
 		this.x = 0.0;
@@ -42,6 +42,8 @@ public class Odometer extends Thread {
 		this.theta = 0.0;
 		this.leftMotorTachoCount = 0;
 		this.rightMotorTachoCount = 0;
+		this.wheelBase = wheelBase;
+		this.wheelRadius = wheelRadius;
 		lock = new Object();
 	}
 
@@ -57,7 +59,6 @@ public class Odometer extends Thread {
 
 		while (true) {
 			updateStart = System.currentTimeMillis();
-			
 			synchronized (lock) {
 
 				nowTachoL = leftMotor.getTachoCount();
@@ -113,8 +114,7 @@ public class Odometer extends Thread {
 			if (update[2])
 				position[2] = theta;
 		}
-	}
-	
+	}	
 
 	/**
 	 * This method gets the X component
