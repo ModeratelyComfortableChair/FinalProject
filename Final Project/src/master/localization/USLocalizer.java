@@ -53,6 +53,13 @@ public class USLocalizer implements Localizer{
 	 */
 	@Override
 	public void localize() {
+		for(int i  = 0; i < 16; i++){
+			nav.turnTo(90);
+			Sound.beep();
+			try {Thread.sleep(1000);} catch (InterruptedException e) {}
+			
+		}
+		
 		double angleA = 0;
 		double angleB = 0;
 		double theta;

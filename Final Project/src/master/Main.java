@@ -89,7 +89,7 @@ public class Main {
 	//if I want to increase the travelling distance, i need to decrease track and radius by the same amount
 	//If i want to increase the turning angle, I need to increase the track
 	public static final double WHEEL_RADIUS = 2.134;
-	public static final double TRACK = 21; 	
+	public static final double TRACK = 17.5; 	
 	public static Integer[] Data = new Integer[5];
 	public static void main(String[] args) throws InterruptedException {
 		int buttonChoice;
