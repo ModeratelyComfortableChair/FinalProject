@@ -22,10 +22,11 @@ import master.poller.USPoller;
  */
 public class USLocalizer implements Localizer{
 
+	//TODO: Change all values except MAX_DIST
 	public static final double LOW_ROTATION_SPEED = 60;				//Speed to rotate while distance < SPEED_BOUNDARY
-	public static final double HIGH_ROTATION_SPEED = 100;			//Speed to rotate while distance > SPEED_BOUNDARY
+	public static final double HIGH_ROTATION_SPEED = 200;			//Speed to rotate while distance > SPEED_BOUNDARY
 	public static final double MAX_DISTANCE = 40;					//Distance at which to stop and latch angle
-	public static final double SPEED_BOUNDARY = 60;					//Distance at which to switch speeds
+	public static final double SPEED_BOUNDARY = 100;					//Distance at which to switch speeds
 	public static final double MOMENT = 6.5;						//Distance between US sensor and center of rotation
 	public static final double TILE_WIDTH_CM = 30.48;				//Width of distance	
 	public static final double FILTER = 200;						//USPoller max readable distance
@@ -33,6 +34,8 @@ public class USLocalizer implements Localizer{
 	private Odometer odo;
 	private Navigation nav;
 	private USPoller usPoller;
+	
+	private boolean lowSpeed;
 	/**
 	 * This constructs
 	 * @param odo - The robot's odometer.
@@ -56,16 +59,20 @@ public class USLocalizer implements Localizer{
 		double edge;
 		double lastEdge = 1000;
 		getFilteredData();
-		try {Thread.sleep(3000);} catch (InterruptedException e) {}
 		if(getFilteredData() < MAX_DISTANCE){							//If we start off facing the wall
-				nav.rotateOnSpot((int) HIGH_ROTATION_SPEED);						// keep rotating cw until the robot doesn't see the wall
+				nav.rotateOnSpot((int) LOW_ROTATION_SPEED);						// keep rotating cw until the robot doesn't see the wall
+				lowSpeed = true;
 				edge = getFilteredData();
 
 				while(edge < MAX_DISTANCE){
 					if(edge > SPEED_BOUNDARY){
-						nav.rotateOnSpot((int) HIGH_ROTATION_SPEED);
-					} else {
+						if(lowSpeed){
+							nav.rotateOnSpot((int) HIGH_ROTATION_SPEED);
+							lowSpeed = false;
+						}
+					} else if(!lowSpeed){
 						nav.rotateOnSpot((int) LOW_ROTATION_SPEED);
+						lowSpeed = true;
 					}
 					LCD.drawString("Distance:         ", 0, 4);
 					LCD.drawString("Distance: " + Integer.toString((int)edge), 0, 4);
@@ -79,35 +86,44 @@ public class USLocalizer implements Localizer{
 			
 			//Now we are definitely not facing the wall
 			nav.rotateOnSpot((int) HIGH_ROTATION_SPEED);
+			try {Thread.sleep(1000);} catch (InterruptedException e) {}
 			edge = getFilteredData();
 
 			while(edge > MAX_DISTANCE ){
 				if(edge > SPEED_BOUNDARY){
-					nav.rotateOnSpot((int) HIGH_ROTATION_SPEED);
-				} else {
+					if(lowSpeed){
+						nav.rotateOnSpot((int) HIGH_ROTATION_SPEED);
+						lowSpeed = false;
+					}
+				} else if(!lowSpeed){
 					nav.rotateOnSpot((int) LOW_ROTATION_SPEED);
+					lowSpeed = true;
 				}
 				LCD.drawString("Distance:         ", 0, 4);
 				LCD.drawString("Distance: " + Integer.toString((int)edge), 0, 4);
-
-
 				edge = getFilteredData();
 			}																//Rotate cw until you face a wall
 			Sound.beep();
 			nav.stopMotors();
 			lastEdge = edge;
 			angleA = (180.0/Math.PI)*odo.getTheta();						//then latch the angle
-			try {Thread.sleep(3000);} catch (InterruptedException e) {}
+			try {Thread.sleep(1000);} catch (InterruptedException e) {}
 			
 			nav.rotateOnSpot((int) -HIGH_ROTATION_SPEED);						// keep rotating ccw until the robot sees another wall
 			try {Thread.sleep(1000);} catch (InterruptedException e) {}		//Initial delay so we don't detect the same angle
 			edge = getFilteredData();
 			while(edge > MAX_DISTANCE || edge > lastEdge){
 				if(edge > SPEED_BOUNDARY){
-					nav.rotateOnSpot((int) HIGH_ROTATION_SPEED);
-				} else {
-					nav.rotateOnSpot((int) LOW_ROTATION_SPEED);
+					if(lowSpeed){
+						nav.rotateOnSpot((int) -HIGH_ROTATION_SPEED);
+						lowSpeed = false;
+					}
+				} else if(!lowSpeed){
+					nav.rotateOnSpot((int) -LOW_ROTATION_SPEED);
+					lowSpeed = true;
 				}
+				LCD.drawString("Distance:         ", 0, 4);
+				LCD.drawString("Distance: " + Integer.toString((int)edge), 0, 4);
 				edge = getFilteredData();
 			}
 			Sound.beep();
@@ -122,9 +138,7 @@ public class USLocalizer implements Localizer{
 			} else {
 				theta = (360 - angleA + angleB)/2;
 			}		
-			
 			try {Thread.sleep(1000);} catch (InterruptedException e) {}
-			
 			//Localize robot with respect to x and y
 			positionLocalization((int)theta);
 	}
@@ -153,6 +167,7 @@ public class USLocalizer implements Localizer{
 		
 		odo.setPosition(new double [] {x, y, 0}, new boolean [] {true, true, true});		//Update nav and odo, positions.
 		nav.getOdometerInfo();
+		nav.travelTo(0,0);
 	}
 	
 	/**
@@ -168,7 +183,5 @@ public class USLocalizer implements Localizer{
 		return Math.min(distance, FILTER);
 	}
 
-		
-	
-
 }
+
