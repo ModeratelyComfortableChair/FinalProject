@@ -127,7 +127,7 @@ public class Search extends Thread implements UltrasonicController{
 	 * that handles the search for styrofoam blocks
 	 */
 	public void run(){
-		State state = State.SCAN;
+		State state = State.INIT;
 		while(true){
 			switch(state){
 			case INIT:
