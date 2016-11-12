@@ -3,17 +3,17 @@
  */
 package master;
 
+import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.motor.EV3MediumRegulatedMotor;
-import lejos.hardware.sensor.EV3ColorSensor;
-import lejos.hardware.sensor.EV3UltrasonicSensor;
-import lejos.hardware.sensor.SensorModes;
+import lejos.remote.ev3.RemoteRequestEV3;
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.*;
+import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 import master.communication.Communication;
@@ -30,8 +30,12 @@ public class Main {
 	// Static Resources:
 	// Left motor connected to output A
 	// Right motor connected to output D
-	private static final EV3LargeRegulatedMotor leftMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
-	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
+	private static EV3LargeRegulatedMotor leftMotor = null; 
+			//new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
+	private static  EV3LargeRegulatedMotor rightMotor = null; 
+			//new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
+	private static EV3LargeRegulatedMotor lift1 = null;
+	private static EV3LargeRegulatedMotor lift2 = null;
 	
 	//TODO Replace this with the comments below
 	private static final EV3LargeRegulatedMotor hook = null;	// = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
@@ -42,8 +46,41 @@ public class Main {
 	private static final Port colorBackPort = LocalEV3.get().getPort("S1");
 	private static final Port usUpperPort = LocalEV3.get().getPort("S3");
 	private static final Port usLowerPort = LocalEV3.get().getPort("S4");
-	private static final Port colorLeftPort = null;
-	private static final Port colorRightPort = null;
+	private static Port colorLeftPort = null;
+	private static Port colorRightPort = null;
+	private static SensorMode colorProvider;
+	private static float[] colorSample;
+
+    static{
+		String[] names = {"master", "slave"};
+	    RemoteRequestEV3[] bricks = new RemoteRequestEV3[names.length];
+	    try {
+	        for(int i = 1; i < names.length; i++)
+	            bricks[i] = new RemoteRequestEV3(BrickFinder.find(names[i])[0].getIPAddress());
+	        RegulatedMotor[] motors = new RegulatedMotor[bricks.length-1];
+	        leftMotor = new EV3LargeRegulatedMotor(BrickFinder.getLocal().getPort("A"));
+	        rightMotor = new EV3LargeRegulatedMotor(BrickFinder.getLocal().getPort("D"));
+	        lift1 = new EV3LargeRegulatedMotor(BrickFinder.getLocal().getPort("C"));
+	        lift2 = new EV3LargeRegulatedMotor(BrickFinder.getLocal().getPort("B"));
+	        for(int i = 1; i < bricks.length; i++){
+	        	int [] a = {4, 25, 500, 7000, 5};	// Array that determines instrument: Piano
+	            Sound.playNote(a, 440, 200);
+	        	motors[i] = bricks[i].createRegulatedMotor("A", 'L'); //Claw
+	        	Port colorLeftPort = bricks[i].getPort("S1");	//Remote Sensor1
+	        	Port colorRightPort = bricks[i].getPort("S2");	//Remote Sensor2
+//		        EV3ColorSensor csL = new EV3ColorSensor(colorLeftPort);
+//		        EV3ColorSensor csR = new EV3ColorSensor(colorRightPort);
+//				colorProvider = cs.getRedMode();
+//				colorSample = new float[colorProvider.sampleSize()];
+	        }
+	//        motors[1].rotateTo(50);
+	//		motors[1].rotateTo(0);
+	    }catch (Exception e){
+	    		Sound.beep();
+	            System.out.println("Got exception: \n" + e);
+	            Delay.msDelay(1000);
+	    }
+    }
 	
 	//TODO Measure and obtain proper constants
 	//increasing radius reduces distance and turning angle
@@ -74,6 +111,12 @@ public class Main {
 		
 		@SuppressWarnings("resource")
 		SensorModes lightBackSensor = new EV3ColorSensor(colorBackPort);
+		
+		@SuppressWarnings("resource")
+		SensorModes lightLeftSensor = new EV3ColorSensor(colorLeftPort);
+		
+		@SuppressWarnings("resource")
+		SensorModes lightRightSensor = new EV3ColorSensor(colorRightPort);
 						
 		
 		// some objects that need to be instantiated
