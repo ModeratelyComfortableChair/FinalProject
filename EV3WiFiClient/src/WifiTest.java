@@ -45,10 +45,6 @@ public class WifiTest {
 	private static final int TEAM_NUMBER = 12;
 
 	private static TextLCD LCD = LocalEV3.get().getTextLCD();
-//	private static Integer corner;
-	private static Integer[] GreenZone = {0,0,0,0,0};
-	private static Integer[] RedZone = {0,0,0,0,0};
-	private static Integer[] zoneData;
 
 	public static void main(String[] args) {
 
@@ -86,32 +82,10 @@ public class WifiTest {
 			} else {
 				System.out.println("Transmission read:\n" + t.toString());
 			}
-			if(t.get("BTN") == TEAM_NUMBER){
-//				corner = t.get("BSC");
-//				GreenZone = {t.get("LGZx"), t.get("LGZy"), t.get("UGZx"), t.get("UGZy")};
-				GreenZone[0]=t.get("BSC");
-				GreenZone[1]=t.get("LGZx");
-				GreenZone[2]=t.get("LGZy");
-				GreenZone[3]=t.get("UGZx");
-				GreenZone[4]=t.get("UGZy");
-				zoneData=GreenZone;
-				
-			}else if(t.get("CTN") == TEAM_NUMBER){
-//				corner = t.get("CSC");
-				RedZone[0]=t.get("CSC");
-				RedZone[1]=t.get("LRZx");
-				RedZone[2]=t.get("LRZy");
-				RedZone[3]=t.get("URZx");
-				RedZone[4]=t.get("URZy");
-				zoneData=RedZone;
-			}
 		}
 		
+
 		// Wait until user decides to end program
 		Button.waitForAnyPress();
-	}
-	
-	public Integer[] getZoneData(){
-		return zoneData;
 	}
 }

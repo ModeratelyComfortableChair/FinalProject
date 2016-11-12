@@ -122,9 +122,13 @@ public class Navigation {
 	private static int convertDistance(double radius, double distance) {
 		return (int) ((180.0 * distance) / (Math.PI * radius));
 	}
-
+	//increasing radius reduces distance and turning angle
+	//increasing width increases travelling,
+	//if i want to increase the distance, i need to decrease the radius
+	//If i want to increase the turning angle, i need to decrease the radius or increase the width
 	/**
-	 * 
+	 * Takes a radius, a distance, and a turning angle, and invokes convertDistance 
+	 * with the desired distance to turn the wheels in order to turn the robot the given angle
 	 * 
 	 * @param radius - radius of robot tire
 	 * @param width - Wheel-base width of the robot

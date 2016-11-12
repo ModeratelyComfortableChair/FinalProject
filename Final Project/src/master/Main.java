@@ -37,14 +37,21 @@ public class Main {
 	private static final EV3MediumRegulatedMotor turner = null; //new EV3MediumRegulatedMotor(LocalEV3.get().getPort("B"));	
 	
 	//TODO initialize other usPorts and colorPorts
-	private static final Port usUpperPort = null;
-	private static final Port usLowerPort = LocalEV3.get().getPort("S3");
-	private static final Port colorBackPort = LocalEV3.get().getPort("S4");	
+
+	private static final Port colorBackPort = LocalEV3.get().getPort("S1");
+	private static final Port usUpperPort = LocalEV3.get().getPort("S3");
+	private static final Port usLowerPort = LocalEV3.get().getPort("S4");
 	private static final Port colorLeftPort = null;
 	private static final Port colorRightPort = null;
 	
+	//TODO Measure and obtain proper constants
+	//increasing radius reduces distance and turning angle
+	//increasing width increases turning
+	
+	//if I want to increase the travelling distance, i need to decrease track and radius by the same amount
+	//If i want to increase the turning angle, I need to increase the track
 	public static final double WHEEL_RADIUS = 2.134;
-	public static final double TRACK = 16.005; 
+	public static final double TRACK = 21; 
 	
 	private static Odometer odo;
 
@@ -60,25 +67,15 @@ public class Main {
 			}
 		}).start();
 		
-		//Setup ultrasonic sensor
-		// 1. Create a port object attached to a physical port (done above)
-		// 2. Create a sensor instance and attach to port
-		// 3. Create a sample provider instance for the above and initialize operating mode
-		// 4. Create a buffer for the sensor data
-		@SuppressWarnings("resource")							    // Because we don't bother to close this resource
-		SensorModes usSensor = new EV3UltrasonicSensor(usLowerPort);		// usSensor is the instance
-		SampleProvider usValue = usSensor.getMode("Distance");	// usDistance provides samples from this instance
-		float[] usData = new float[usValue.sampleSize()];		// usData is the buffer in which data are returned
-
-		//Setup color sensor
-		// 1. Create a port object attached to a physical port (done above)
-		// 2. Create a sensor instance and attach to port
-		// 3. Create a sample provider instance for the above and initialize operating mode
-		// 4. Create a buffer for the sensor data
+		
+		@SuppressWarnings("resource")							    			// Because we don't bother to close this resource
+		EV3UltrasonicSensor usUpperSensor = new EV3UltrasonicSensor(usUpperPort);		// usSensor is the instance
+		
+		@SuppressWarnings("resource")							    			// Because we don't bother to close this resource
+		SensorModes usLowerSensor = new EV3UltrasonicSensor(usLowerPort);		// usSensor is the instance
+		
 		@SuppressWarnings("resource")
-		SensorModes colorSensor = new EV3ColorSensor(colorBackPort);	// colorSensor is the instance
-		SampleProvider colorValue = colorSensor.getMode("RGB");		// colorValue provides samples from this instance
-		float[] colorData = new float[colorValue.sampleSize()];		// colorData is the buffer in which data are returned
+		SensorModes lightBackSensor = new EV3ColorSensor(colorBackPort);
 						
 		
 		// some objects that need to be instantiated
@@ -87,16 +84,17 @@ public class Main {
 		OdometryDisplay odometryDisplay = new OdometryDisplay(odo,t);
 		Navigation nav = new Navigation(odo, leftMotor, rightMotor);
 		
-		USPoller usPoller = new USPoller(usValue, usData);
-		LightPoller lightPoller = new LightPoller(colorValue, colorData);
+		USPoller usLowerPoller = new USPoller(usUpperSensor);
+		USPoller usUpperPoller = new USPoller(usLowerSensor);
+		LightPoller lightBackPoller = new LightPoller(lightBackSensor);
 		
 		//Localization and it's localizer arguments
-		USLocalizer usLocalizer = new USLocalizer(odo, usPoller, nav);
-		LightLocalizer lightLocalizer = new LightLocalizer(odo, lightPoller, nav);
+		USLocalizer usLocalizer = new USLocalizer(odo, usLowerPoller, nav);
+		LightLocalizer lightLocalizer = new LightLocalizer(odo, lightBackPoller, nav);
 		LocalizationMaster localization = new LocalizationMaster(usLocalizer, lightLocalizer);
 		
 		
-		Search searcher = new Search(odo, nav, turner, hook, colorValue, colorData, localization);
+		Search searcher = new Search(odo, nav, turner, hook, localization, usLowerPoller, usUpperPoller);
 		
 		
 		
@@ -126,7 +124,7 @@ public class Main {
 			// start the odometer, the odometry display
 			odo.start();
 			odometryDisplay.start();
-			usPoller.start();
+			usLowerPoller.start();
 			searcher.start();
 						
 		}

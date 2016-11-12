@@ -10,6 +10,7 @@ import lejos.hardware.motor.EV3MediumRegulatedMotor;
 import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 import master.localization.LocalizationMaster;
+import master.poller.USPoller;
 import master.poller.UltrasonicController;
 
 /**
@@ -30,8 +31,9 @@ public class Search extends Thread implements UltrasonicController{
 	public double thetaDest;
 	public double WHEEL_RADIUS;
 	public double TRACK;
-	private static final int FORWARD_SPEED = 150, ROTATE_SPEED = 100, ACCELERATION = 1000;
-    //other rotation speed
+	private static final int FORWARD_SPEED = 150, ROTATE_SPEED = 100, ACCELERATION = 1000, SCAN_SPEED = 20, SCAN_SIZE = 300;
+	private static final double SCAN_RADIUS = 91.44;
+	//other rotation speed
     private static int RSPEED = 50, counter=0;
 	    
     // Array that determines instrument: Piano
@@ -65,7 +67,9 @@ public class Search extends Thread implements UltrasonicController{
     private Navigation nav;
     private LocalizationMaster localization;
     private boolean localized = false;
-		
+	private USPoller usLower;
+	private USPoller usUpper;
+	private double scanStartAngle;
 		
 	// Enum declaration/initialization
 	enum State {INIT, SCAN, TURNING, TRAVELLING, IDENTIFY, EMERGENCY, TARGET};
@@ -83,8 +87,7 @@ public class Search extends Thread implements UltrasonicController{
 	 * @param colorData Data from Color Sensor
 	 * @param localization Localization Class
 	 */
-	public Search(Odometer odometer, Navigation nav, EV3MediumRegulatedMotor turner, EV3LargeRegulatedMotor hook, 
-			SampleProvider colorSensor, float[] colorData, LocalizationMaster localization) {
+	public Search(Odometer odometer, Navigation nav, EV3MediumRegulatedMotor turner, EV3LargeRegulatedMotor hook, LocalizationMaster localization, USPoller usLower, USPoller usHigher) {
 		//Set variables
 		this.xCurrent = 0;
 		this.yCurrent = 0;
@@ -93,6 +96,8 @@ public class Search extends Thread implements UltrasonicController{
         this.nav = nav;
 		this.WHEEL_RADIUS = odometer.wheelRadius;
 		this.TRACK = odometer.wheelBase;
+		this.usLower = usLower;
+		this.usUpper = usHigher;
 		
 		//Get motors
 		EV3LargeRegulatedMotor[] motors = this.odo.getMotors();
@@ -104,10 +109,6 @@ public class Search extends Thread implements UltrasonicController{
 		// set acceleration
 	    this.leftMotor.setAcceleration(ACCELERATION);
 	    this.rightMotor.setAcceleration(ACCELERATION);
-	    
-	    //ColorSensor
-	    this.colorProvider = colorSensor;
-		this.colorData = colorData;
 		
 		//Localization
 		this.localization = localization;
@@ -126,7 +127,7 @@ public class Search extends Thread implements UltrasonicController{
 	 * that handles the search for styrofoam blocks
 	 */
 	public void run(){
-		State state = State.INIT;
+		State state = State.SCAN;
 		while(true){
 			switch(state){
 			case INIT:
@@ -139,7 +140,8 @@ public class Search extends Thread implements UltrasonicController{
 				}
 				
 				//Temp to test localization. remove later
-				while(true);
+				state = State.SCAN;
+				break;
 				/*
 				if(true){ //if some boolean is true
 					state = State.SCAN;
@@ -151,6 +153,25 @@ public class Search extends Thread implements UltrasonicController{
 			case SCAN:
 				LCD.drawString("            ", 0, 5);
 				LCD.drawString("SCAN", 0, 5);
+				usLower.enable();
+				scanStartAngle = (odo.getTheta())*(180.0/Math.PI);
+				ScanQueue scanQueue = new ScanQueue(SCAN_SIZE, SCAN_RADIUS);
+				//nav.rotateOnSpot(SCAN_SPEED);
+				double distance;
+				while(odo.getTheta()*(180.0/Math.PI) <= scanStartAngle + 90){
+					distance = usLower.filterData();
+					System.out.print(distance + " ");
+					if(scanQueue.checkAndAdd(distance)){
+						nav.stopMotors();
+						coinSound();
+					}
+				}
+				
+				
+				nav.stopMotors();
+				nav.getOrientation();
+				
+				
 				
 				if(true){ //If some boolean is true
 					//something

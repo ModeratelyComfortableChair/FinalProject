@@ -1,11 +1,14 @@
 package master.poller;
 
+import lejos.hardware.sensor.EV3ColorSensor;
+import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
 
 public class LightPoller extends Poller {
 
-	public LightPoller(SampleProvider sensor, float[] data) {
-		super(sensor, data);
+	private EV3ColorSensor sensor;
+	public LightPoller(SensorModes sensor) {
+		super(sensor);
 		// TODO Auto-generated constructor stub
 	}
 
