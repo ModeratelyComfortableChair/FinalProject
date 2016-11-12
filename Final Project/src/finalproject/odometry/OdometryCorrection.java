@@ -1,6 +1,7 @@
 package finalproject.odometry;
 
-import finalproject.poller.LightPoller;
+import master.Odometer;
+import master.poller.LightPoller;
 
 public class OdometryCorrection {
 
@@ -9,6 +10,4 @@ public class OdometryCorrection {
 		this.leftLight = leftLight;
 		this.rightLight = rightLight;
 	}
-	
-	
 }

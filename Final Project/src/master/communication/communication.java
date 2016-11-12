@@ -52,7 +52,7 @@ public class Communication {
    
     public Communication(){};
  
-    public void Communicate(){
+    public Integer[] Communicate(){
         LCD.clear();
  
         /*
@@ -108,12 +108,12 @@ public class Communication {
                 zoneData=RedZone;
             }
         }
-       
+        return zoneData;
+        
         // Wait until user decides to end program
-        Button.waitForAnyPress();
+//        Button.waitForAnyPress();
+
     }
    
-    public Integer[] getZoneData(){
-        return zoneData;
-    }
+    
 }

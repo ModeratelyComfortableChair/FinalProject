@@ -16,6 +16,7 @@ import lejos.hardware.port.Port;
 import lejos.hardware.sensor.*;
 import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
+import master.communication.Communication;
 import master.localization.LightLocalizer;
 import master.localization.LocalizationMaster;
 import master.localization.Localizer;
@@ -51,11 +52,8 @@ public class Main {
 	//if I want to increase the travelling distance, i need to decrease track and radius by the same amount
 	//If i want to increase the turning angle, I need to increase the track
 	public static final double WHEEL_RADIUS = 2.134;
-	public static final double TRACK = 21; 
-	
-	private static Odometer odo;
-
-	
+	public static final double TRACK = 21; 	
+	public static Integer[] Data = new Integer[5];
 	public static void main(String[] args) throws InterruptedException {
 		int buttonChoice;
 		int [] a = {4, 25, 500, 7000, 5};	// Array that determines instrument: Piano
@@ -95,7 +93,7 @@ public class Main {
 		
 		
 		Search searcher = new Search(odo, nav, turner, hook, localization, usLowerPoller, usUpperPoller);
-		
+		Communication com = new Communication();
 		
 		
 		
@@ -116,8 +114,14 @@ public class Main {
 		} while (buttonChoice != Button.ID_LEFT
 				&& buttonChoice != Button.ID_RIGHT);
 
-		if (buttonChoice == Button.ID_LEFT) {
-			
+		if (buttonChoice == Button.ID_ENTER) {
+			//fetch Data
+			Data=com.Communicate();
+//			Data[0] is Corner
+//			Data[1] is Zone Lower X
+//			Data[2] is Zone Lower Y
+//			Data[3] is Zone Upper X
+//			Data[4] is Zone Upper Y
 			
 		}else{
 			
