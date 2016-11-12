@@ -27,7 +27,7 @@ import lejos.hardware.Button;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.TextLCD;
 
-public class communication {
+public class Communication {
 	/*
 	 * Example call of the transmission protocol 
 	 * We use System.out.println() instead of LCD printing so that 
@@ -44,11 +44,15 @@ public class communication {
 
 	private static final String SERVER_IP = "192.168.2.17";
 	private static final int TEAM_NUMBER = 12;
-	private static String corner;
-	
+//	private static Integer corner;
+	private static Integer[] GreenZone = {0,0,0,0,0};
+	private static Integer[] RedZone = {0,0,0,0,0};
+	private static Integer[] zoneData;
 	private static TextLCD LCD = LocalEV3.get().getTextLCD();
+	
+	public Communication(){};
 
-	public communication(){
+	public void Communicate(){
 		LCD.clear();
 
 		/*
@@ -85,16 +89,31 @@ public class communication {
 				System.out.println("Transmission read:\n" + t.toString());
 			}
 			if(t.get("BTN") == TEAM_NUMBER){
-				//corner = t.get(BSC);
+//				corner = t.get("BSC");
+//				GreenZone = {t.get("LGZx"), t.get("LGZy"), t.get("UGZx"), t.get("UGZy")};
+				GreenZone[0]=t.get("BSC");
+				GreenZone[1]=t.get("LGZx");
+				GreenZone[2]=t.get("LGZy");
+				GreenZone[3]=t.get("UGZx");
+				GreenZone[4]=t.get("UGZy");
+				zoneData=GreenZone;
 				
 			}else if(t.get("CTN") == TEAM_NUMBER){
-				//corner = t.get(CSC);
+//				corner = t.get("CSC");
+				RedZone[0]=t.get("CSC");
+				RedZone[1]=t.get("LRZx");
+				RedZone[2]=t.get("LRZy");
+				RedZone[3]=t.get("URZx");
+				RedZone[4]=t.get("URZy");
+				zoneData=RedZone;
 			}
-		}		
-		
-
+		}
 		
 		// Wait until user decides to end program
 		Button.waitForAnyPress();
+	}
+	
+	public Integer[] getZoneData(){
+		return zoneData;
 	}
 }

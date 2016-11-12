@@ -16,6 +16,7 @@ import lejos.hardware.port.Port;
 import lejos.hardware.sensor.*;
 import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
+import master.communication.Communication;
 import master.localization.LightLocalizer;
 import master.localization.LocalizationMaster;
 import master.localization.Localizer;
@@ -98,7 +99,7 @@ public class Main {
 		
 		Search searcher = new Search(odo, nav, turner, hook, colorValue, colorData, localization);
 		
-		
+		Communication com = new Communication();
 		
 		
 		
@@ -118,10 +119,11 @@ public class Main {
 		} while (buttonChoice != Button.ID_LEFT
 				&& buttonChoice != Button.ID_RIGHT);
 
-		if (buttonChoice == Button.ID_LEFT) {
-			
+		if (buttonChoice == Button.ID_ENTER) {
+			com.Communicate();
 			
 		}else{
+			
 			
 			// start the odometer, the odometry display
 			odo.start();
