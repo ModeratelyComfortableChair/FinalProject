@@ -1,7 +1,7 @@
 /* 
  * OdometryCorrection.java
  */
-package master;
+package master.odometry;
 
 import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;

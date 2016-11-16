@@ -47,7 +47,7 @@ public class USPoller extends Poller {
 
 	
 	/**
-	 * Setter method for fetch. Fetch controls whether or not the sensor should be fetching values.
+	 * Sets sensor to getDistanceMode and initializes the value and data. Sets enabled to true
 	 * @param fetch
 	 */
 	public void enable(){
@@ -60,6 +60,9 @@ public class USPoller extends Poller {
 		enabled = true;
 	}
 
+	/**
+	 * Sets sensor to getListenMode so that it does not send pings. Sets enabled to false;
+	 */
 	public void disable(){
 		sensor.getListenMode();
 		enabled = false;

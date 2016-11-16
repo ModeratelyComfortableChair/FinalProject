@@ -1,4 +1,4 @@
-package master;
+package master.odometry;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 

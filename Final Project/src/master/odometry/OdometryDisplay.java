@@ -2,7 +2,7 @@
  * 
  */
 
-package master;
+package master.odometry;
 
 import lejos.hardware.lcd.TextLCD;
 

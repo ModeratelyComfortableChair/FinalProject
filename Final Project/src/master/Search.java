@@ -10,6 +10,7 @@ import lejos.hardware.motor.EV3MediumRegulatedMotor;
 import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 import master.localization.LocalizationMaster;
+import master.odometry.Odometer;
 import master.poller.USPoller;
 import master.poller.UltrasonicController;
 

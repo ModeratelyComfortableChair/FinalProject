@@ -3,7 +3,7 @@ package master.localization;
 import lejos.hardware.Sound;
 import lejos.hardware.lcd.LCD;
 import master.Navigation;
-import master.Odometer;
+import master.odometry.Odometer;
 import master.poller.USPoller;
 
 
