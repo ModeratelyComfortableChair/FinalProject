@@ -1,11 +1,21 @@
 package master;
 
+/**
+ * ScanQueue takes values, mainly from a USPoller, and places them in a queue. It can also return whether or not those values are all under a certain value.
+ * @author Jerome Marfleet
+ * @version 1.0
+ * @since 2016-11-13
+ */
 public class ScanQueue {
 	private int queueSize, count;
 	private double boundary;
 	private double[] queue;
 	
-	
+	/**
+	 * Constructor
+	 * @param stackSize size of the stack
+	 * @param boundary cutoff value
+	 */
 	public ScanQueue(int stackSize, double boundary){
 		this.queueSize = stackSize;
 		this.boundary = boundary;
@@ -13,6 +23,10 @@ public class ScanQueue {
 		count = 0;
 	}
 	
+	/**
+	 * Checks to see if
+	 * @return
+	 */
 	public boolean isFull(){
 		if(count == queueSize){
 			return true;
@@ -20,14 +34,24 @@ public class ScanQueue {
 		return false;
 	}
 	
+	/**
+	 * Obtains the average of the quee
+	 * @return the average of every value in the queue
+	 */
 	public double getAverage(){
 		double sum = 0;
 		for (int i  = 0; i < queueSize; i++){
 			sum += queue[i];
 		}
-		return sum/queueSize;
+		return sum/count;
 	}
 	
+	/**
+	 * 
+	 * @param distance
+	 * @return adds a new value to the queue, and returns true if the queue is filled and every value is below the boundary
+	 *
+	 */
 	public boolean checkAndAdd(double distance){
 		if(distance == 0){
 			return false;
@@ -43,6 +67,9 @@ public class ScanQueue {
 		}
 	}
 	
+	/**
+	 * Shifts every value in the queue one over.
+	 */
 	private void shiftQueue() {
 		for(int i = 0; i < queueSize - 1; i++){
 			queue[i] = queue[i + 1];
@@ -50,6 +77,10 @@ public class ScanQueue {
 		
 	}
 
+	/**
+	 * Checks the queue to see if it is filled, and every value is below the boundary
+	 * @return true if queue is filled and every value is below boundary. false otherwise.
+	 */
 	public boolean checkQueue(){
 		if(count < queueSize){
 			return false;
@@ -63,6 +94,9 @@ public class ScanQueue {
 		return true;
 	}
 	
+	/**
+	 * Sets the count to 0. This is more efficient than filling stack with zeroes
+	 */
 	public void clearQueue(){
 		count = 0;
 	}

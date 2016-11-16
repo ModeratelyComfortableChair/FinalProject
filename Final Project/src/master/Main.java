@@ -22,8 +22,11 @@ import master.localization.LightLocalizer;
 import master.localization.LocalizationMaster;
 import master.localization.Localizer;
 import master.localization.USLocalizer;
+import master.odometry.Odometer;
+import master.odometry.OdometryDisplay;
 import master.poller.LightPoller;
 import master.poller.USPoller;
+import master.wifi.StartCorner;
 
 
 public class Main {
@@ -37,6 +40,7 @@ public class Main {
 			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 	private static EV3LargeRegulatedMotor lift1 = null;
 	private static EV3LargeRegulatedMotor lift2 = null;
+	private static RegulatedMotor claw = null;
 	
 	//TODO Replace this with the comments below
 	private static final EV3LargeRegulatedMotor hook = null;	// = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
@@ -52,7 +56,7 @@ public class Main {
 	private static SensorMode colorProvider;
 	private static float[] colorSample;
 
-/*
+
     static{
 		String[] names = {"master", "slave"};
 	    RemoteRequestEV3[] bricks = new RemoteRequestEV3[names.length];
@@ -68,7 +72,7 @@ public class Main {
 	        for(int i = 1; i < bricks.length; i++){
 	        	int [] a = {4, 25, 500, 7000, 5};	// Array that determines instrument: Piano
 	            Sound.playNote(a, 440, 200);
-	        	motors[i] = bricks[i].createRegulatedMotor("A", 'L'); //Claw
+	        	claw = bricks[i].createRegulatedMotor("A", 'L'); //Claw
 	        	Port colorLeftPort = bricks[i].getPort("S1");	//Remote Sensor1
 	        	Port colorRightPort = bricks[i].getPort("S2");	//Remote Sensor2
 //		        EV3ColorSensor csL = new EV3ColorSensor(colorLeftPort);
@@ -83,7 +87,7 @@ public class Main {
 	            System.out.println("Got exception: \n" + e);
 	            Delay.msDelay(1000);
 	    }
-    }*/
+    }
 	
 	//TODO Measure and obtain proper constants
 	//increasing radius reduces distance and turning angle
@@ -94,6 +98,7 @@ public class Main {
 	public static final double WHEEL_RADIUS = 2.134;
 	public static final double TRACK = 17.5; 	
 	public static Integer[] Data = new Integer[5];
+	public static int[] corner = new int[2];
 	public static void main(String[] args) throws InterruptedException {
 		int buttonChoice;
 		int [] a = {4, 25, 500, 7000, 5};	// Array that determines instrument: Piano
@@ -160,14 +165,18 @@ public class Main {
 		} while (buttonChoice != Button.ID_LEFT
 				&& buttonChoice != Button.ID_RIGHT);
 
-		if (buttonChoice == Button.ID_ENTER) {
+		if (buttonChoice == Button.ID_LEFT) {
 			//fetch Data
+			Sound.playNote(a, 440, 200);
 			Data=com.Communicate();
+			Sound.playNote(a, 440, 200);
+			Sound.playNote(a, 440, 200);
 //			Data[0] is Corner
 //			Data[1] is Zone Lower X
 //			Data[2] is Zone Lower Y
 //			Data[3] is Zone Upper X
 //			Data[4] is Zone Upper Y
+			corner=StartCorner.lookupCorner(Data[0]).getCooridinates();
 			
 		}else{
 			

@@ -152,7 +152,7 @@ public class Search extends Thread implements UltrasonicController{
 				ScanQueue idQueue = new ScanQueue(ID_SIZE, SCAN_RADIUS);
 				nav.rotateOnSpot(SCAN_SPEED);
 				double distance;
-				boolean block = false;
+				boolean block = true;
 				while(odo.getTheta()*(180.0/Math.PI) <= scanStartAngle + 90){
 					distance = usLower.filterData();
 					if(scanQueue.checkAndAdd(distance)){
@@ -164,9 +164,10 @@ public class Search extends Thread implements UltrasonicController{
 						usUpper.enable();
 						double startTime = System.currentTimeMillis();
 						double currentTime = System.currentTimeMillis();
-						while(!idQueue.isFull() && currentTime - startTime < ID_TIME){
+						while(currentTime - startTime < ID_TIME){
 							distance = usUpper.filterData();
-							if(idQueue.checkAndAdd(distance)){block = true;}
+							if(idQueue.checkAndAdd(distance)){block = false;}
+							coinSound();
 							currentTime = System.currentTimeMillis();
 						}
 						//TODO write code for picking up block

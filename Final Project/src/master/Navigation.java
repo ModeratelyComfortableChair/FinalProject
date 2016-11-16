@@ -3,6 +3,7 @@
 
 package master;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
+import master.odometry.Odometer;
 
 /**
  * Navigation handles all movement of the Robot's wheel motors. No class can move the robot

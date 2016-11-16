@@ -6,6 +6,13 @@ import lejos.hardware.sensor.EV3UltrasonicSensor;
 import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
 
+/**
+ * USPoller takes an Ultrasonic Sensor and defines how information is polled from the sensor.
+ * @author Jerome Marfleet
+ * @version 1.0
+ * @since 2016-11-02
+ *
+ */
 public class USPoller extends Poller {
 
 	private int distance;
@@ -13,6 +20,10 @@ public class USPoller extends Poller {
 	private boolean enabled, updated;
 	private EV3UltrasonicSensor sensor;
 
+	/**
+	 * Constructor
+	 * @param sensor Ultrasonic sensor to poll data from
+	 */
 	public USPoller(SensorModes sensor) {
 		super(sensor);
 		this.sensor = (EV3UltrasonicSensor) sensor;
