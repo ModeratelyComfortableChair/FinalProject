@@ -139,24 +139,16 @@ public class Search extends Thread implements UltrasonicController{
 					localized = true;
 				}
 				
-				//Temp to test localization. remove later
 				state = State.SCAN;
 				break;
-				/*
-				if(true){ //if some boolean is true
-					state = State.SCAN;
-				}else if(isNavigating()){							//travelTo has been called
-				state = State.TURNING;								//First turn to your destination
-				break;
-				}*/
-                
+			
 			case SCAN:
 				LCD.drawString("            ", 0, 5);
 				LCD.drawString("SCAN", 0, 5);
 				usLower.enable();
 				scanStartAngle = (odo.getTheta())*(180.0/Math.PI);
 				ScanQueue scanQueue = new ScanQueue(SCAN_SIZE, SCAN_RADIUS);
-				//nav.rotateOnSpot(SCAN_SPEED);
+				nav.rotateOnSpot(SCAN_SPEED);
 				double distance;
 				while(odo.getTheta()*(180.0/Math.PI) <= scanStartAngle + 90){
 					distance = usLower.filterData();

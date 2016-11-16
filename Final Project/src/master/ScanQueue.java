@@ -13,6 +13,21 @@ public class ScanQueue {
 		count = 0;
 	}
 	
+	public boolean isFull(){
+		if(count == queueSize){
+			return true;
+		}
+		return false;
+	}
+	
+	public double getAverage(){
+		double sum = 0;
+		for (int i  = 0; i < queueSize; i++){
+			sum += queue[i];
+		}
+		return sum/queueSize;
+	}
+	
 	public boolean checkAndAdd(double distance){
 		if(distance == 0){
 			return false;
