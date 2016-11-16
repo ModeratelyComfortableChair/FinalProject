@@ -39,7 +39,7 @@ public class ScanQueue {
 		} else {
 			shiftQueue();
 			queue[queueSize - 1] = distance;
-			return checkStack();
+			return checkQueue();
 		}
 	}
 	
@@ -50,7 +50,7 @@ public class ScanQueue {
 		
 	}
 
-	public boolean checkStack(){
+	public boolean checkQueue(){
 		if(count < queueSize){
 			return false;
 		} 
@@ -61,5 +61,9 @@ public class ScanQueue {
 		}
 		
 		return true;
+	}
+	
+	public void clearQueue(){
+		count = 0;
 	}
 }

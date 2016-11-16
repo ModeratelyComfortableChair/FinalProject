@@ -10,13 +10,14 @@ public class USPoller extends Poller {
 
 	private int distance;
 	private static final int REFRESH_TIME_MS = 50;
-	private boolean enabled;
+	private boolean enabled, updated;
 	private EV3UltrasonicSensor sensor;
 
 	public USPoller(SensorModes sensor) {
 		super(sensor);
 		this.sensor = (EV3UltrasonicSensor) sensor;
 		disable();
+		updated = false;
 	}
 
 	public void run(){
@@ -25,6 +26,7 @@ public class USPoller extends Poller {
 				sensor.fetchSample(data,0);							// acquire data
 				distance=(int)(data[0]*100.0);					// extract from buffer, cast to int
 				try { Thread.sleep(50); } catch(Exception e){}		// Poor man's timed sampling
+				updated = !updated;
 			} else {
 				distance = 0;
 			}
@@ -32,14 +34,18 @@ public class USPoller extends Poller {
 	}
 
 	/**
-	 * Method returns distance obtained by
+	 * Method returns distance obtained by filter. Will not return until poller updates distance.
 	 * @return double value of USSensor
 	 */
 	@Override
 	public double filterData() {
+		boolean current = updated;
+		System.out.print("");
+		while(current == updated);
 		return distance;
 	}
 
+	
 	/**
 	 * Setter method for fetch. Fetch controls whether or not the sensor should be fetching values.
 	 * @param fetch

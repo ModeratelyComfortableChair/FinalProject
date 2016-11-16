@@ -31,26 +31,26 @@ public class Search extends Thread implements UltrasonicController{
 	public double thetaDest;
 	public double WHEEL_RADIUS;
 	public double TRACK;
-	private static final int FORWARD_SPEED = 150, ROTATE_SPEED = 100, ACCELERATION = 1000, SCAN_SPEED = 20, SCAN_SIZE = 300;
-	private static final double SCAN_RADIUS = 91.44;
+	private static final int FORWARD_SPEED = 150, ROTATE_SPEED = 100, ACCELERATION = 1000, SCAN_SPEED = 20, SCAN_SIZE = 25, ID_SIZE = 20, ID_TIME = 2000;
+	private static final double SCAN_RADIUS = 60.96;
 	//other rotation speed
-    private static int RSPEED = 50, counter=0;
-	    
-    // Array that determines instrument: Piano
+	private static int RSPEED = 50, counter=0;
+
+	// Array that determines instrument: Piano
 	public int [] a = {4, 25, 500, 7000, 5};	
-	
+
 	// Constants for USPoller
 	//private double distance;
 	private final double objectRange = 7.3; 
-	
-    //
-    public double distObject, xObject, yObject;
+
+	//
+	public double distObject, xObject, yObject;
 	private double distance, rangeObject = 50;
-    
+
 	//Variable for LightSensor
 	private float[] colorData;
 	private SampleProvider colorProvider;
-	
+
 	// Boolean variables
 	private boolean isNavigating = false;
 	private boolean isObject = false;
@@ -59,22 +59,22 @@ public class Search extends Thread implements UltrasonicController{
 	public boolean isAvoiding = false;
 	public boolean isDetected;
 	public boolean notScanning = true;
-	
+
 	// Initialization of some variables
 	public EV3LargeRegulatedMotor leftMotor, rightMotor, hook; 	//They are public because AvoidObstacle calls them
 	public EV3MediumRegulatedMotor turner;
 	public Odometer odo;
-    private Navigation nav;
-    private LocalizationMaster localization;
-    private boolean localized = false;
+	private Navigation nav;
+	private LocalizationMaster localization;
+	private boolean localized = false;
 	private USPoller usLower;
 	private USPoller usUpper;
 	private double scanStartAngle;
-		
+
 	// Enum declaration/initialization
 	enum State {INIT, SCAN, TURNING, TRAVELLING, IDENTIFY, EMERGENCY, TARGET};
 
-	
+
 	// Navigation Constructor
 	/**
 	 * Constructor 
@@ -93,33 +93,33 @@ public class Search extends Thread implements UltrasonicController{
 		this.yCurrent = 0;
 		this.thetaCurrent = 0;
 		this.odo = odometer;
-        this.nav = nav;
+		this.nav = nav;
 		this.WHEEL_RADIUS = odometer.wheelRadius;
 		this.TRACK = odometer.wheelBase;
 		this.usLower = usLower;
 		this.usUpper = usHigher;
-		
+
 		//Get motors
 		EV3LargeRegulatedMotor[] motors = this.odo.getMotors();
 		this.leftMotor = motors[0];
 		this.rightMotor = motors[1];
 		this.turner = turner;
 		this.hook = hook;
-		
+
 		// set acceleration
-	    this.leftMotor.setAcceleration(ACCELERATION);
-	    this.rightMotor.setAcceleration(ACCELERATION);
-		
+		this.leftMotor.setAcceleration(ACCELERATION);
+		this.rightMotor.setAcceleration(ACCELERATION);
+
 		//Localization
 		this.localization = localization;
 
-		
+
 	}
-	
+
 	// Setup Threads
 	AvoidObstacle avoidance = null;
 
-	
+
 	// Run method
 	/**
 	 * Method that extends from Thread
@@ -127,61 +127,73 @@ public class Search extends Thread implements UltrasonicController{
 	 * that handles the search for styrofoam blocks
 	 */
 	public void run(){
-		State state = State.INIT;
+		State state = State.SCAN;
 		while(true){
 			switch(state){
 			case INIT:
 				LCD.drawString("            ", 0, 5);
 				LCD.drawString("INIT", 0, 5);
-				
+
 				if(!localized){
 					localization.localize();
 					localized = true;
 				}
-				
+
 				state = State.SCAN;
 				break;
-			
+
 			case SCAN:
 				LCD.drawString("            ", 0, 5);
 				LCD.drawString("SCAN", 0, 5);
 				usLower.enable();
 				scanStartAngle = (odo.getTheta())*(180.0/Math.PI);
 				ScanQueue scanQueue = new ScanQueue(SCAN_SIZE, SCAN_RADIUS);
+				ScanQueue idQueue = new ScanQueue(ID_SIZE, SCAN_RADIUS);
 				nav.rotateOnSpot(SCAN_SPEED);
 				double distance;
+				boolean block = false;
 				while(odo.getTheta()*(180.0/Math.PI) <= scanStartAngle + 90){
 					distance = usLower.filterData();
-					System.out.print(distance + " ");
 					if(scanQueue.checkAndAdd(distance)){
 						nav.stopMotors();
 						coinSound();
+						usLower.disable();
+						scanQueue.clearQueue();
+						//Pull and update values for ID_TIME. Update block boolean if we detect it
+						usUpper.enable();
+						double startTime = System.currentTimeMillis();
+						double currentTime = System.currentTimeMillis();
+						while(!idQueue.isFull() && currentTime - startTime < ID_TIME){
+							distance = usUpper.filterData();
+							if(idQueue.checkAndAdd(distance)){block = true;}
+							currentTime = System.currentTimeMillis();
+						}
+						//TODO write code for picking up block
+						if(block){
+							coinSound();
+						} else {	//TODO Write code for ignoring object
+							Sound.beep();
+						}
 					}
+
 				}
-				
-				
 				nav.stopMotors();
-				nav.getOrientation();
-				
-				
-				
-				if(true){ //If some boolean is true
-					//something
-				}
+				nav.getOdometerInfo();
 				break;
+
 			case TURNING:								    //TURNING STATE
 				LCD.drawString("            ", 0, 5);
 				LCD.drawString("TURNING", 0, 5);
-					turnTo(getDestAngle());					//Updates Destination Angle and turn to that Angle
-					if(facingDest()){						//check if facing destination
-						state = State.TRAVELLING;
-					}
-					break;	
+				turnTo(getDestAngle());					//Updates Destination Angle and turn to that Angle
+				if(facingDest()){						//check if facing destination
+					state = State.TRAVELLING;
+				}
+				break;	
 			case TRAVELLING:								//TRAVELLING STATE
 				forward();
 				LCD.drawString("            ", 0, 5);
 				LCD.drawString("TRAVELLING", 0, 5);
-				
+
 				xCurrent = odo.getX();
 				yCurrent = odo.getY();
 				if(((Math.abs(xCurrent-xDest)<1.3) && (Math.abs(yCurrent-yDest)<1.3))){ 										//Arrived to destination
@@ -192,7 +204,7 @@ public class Search extends Thread implements UltrasonicController{
 			case IDENTIFY:									// IDENTIFY STATE
 				identify();
 				if(isChecked && isBlock){
-				
+
 					state = State.TARGET;
 				}else if(isChecked && !isBlock){					//Check if there is an obstacle
 					notScanning=false;
@@ -211,9 +223,9 @@ public class Search extends Thread implements UltrasonicController{
 				LCD.drawString("            ", 0, 5);
 				LCD.drawString("TARGET", 0, 5);
 				//Catch block
-				
+
 				//travelTo goal
-				
+
 				state = State.INIT;
 
 			}
@@ -224,7 +236,7 @@ public class Search extends Thread implements UltrasonicController{
 			}
 		}
 	}
-	
+
 	public boolean isObject() {
 		return isObject;
 	}
@@ -232,12 +244,12 @@ public class Search extends Thread implements UltrasonicController{
 	public boolean notScanning(){
 		return this.notScanning;
 	}
-	
+
 	public boolean isDetected(){
 		return this.isDetected;
 	}
-	
-	
+
+
 	// Return Object's X-coordinate
 	public double targetX(double dist){
 		double Theta = odo.getTheta();								// Angle of robot is facing:
@@ -252,7 +264,7 @@ public class Search extends Thread implements UltrasonicController{
 		}
 		return xObject;
 	}
-	
+
 	// Return Object's Y-coordinate
 	public double targetY(double dist){
 		double Theta = odo.getTheta();								// Angle of robot is facing:
@@ -267,7 +279,7 @@ public class Search extends Thread implements UltrasonicController{
 		}
 		return yObject;
 	}
-	
+
 	// Check if out of bound
 	public boolean OoB(double x, double y){
 		if(x<-15 || x>75 || y<-15 || y>75){
@@ -275,7 +287,7 @@ public class Search extends Thread implements UltrasonicController{
 		}else
 			return false;
 	}
-	
+
 
 	//Intermediate method that calls checkisBlock if
 	//the object has not been checked yet
@@ -291,7 +303,7 @@ public class Search extends Thread implements UltrasonicController{
 		} 
 	}
 
-	
+
 	// Method that determines Type of Block
 	public boolean checkisBlock(){
 		colorProvider.fetchSample(colorData, 0);
@@ -348,7 +360,7 @@ public class Search extends Thread implements UltrasonicController{
 		thetaDest = Math.toDegrees(Math.atan2((xDest-xCurrent), (yDest-yCurrent)));
 		isNavigating = true;
 	}
-	
+
 	//determine to which angle the robot has to turn to
 	public void turnTo(double theta){
 		//
@@ -369,7 +381,7 @@ public class Search extends Thread implements UltrasonicController{
 		}
 		thetaCurrent = odo.getTheta();
 	}	
-	
+
 	//Turning method
 	public void turn(double theta){
 		leftMotor.setAcceleration(500);
@@ -379,7 +391,7 @@ public class Search extends Thread implements UltrasonicController{
 		leftMotor.rotate(convertAngle(WHEEL_RADIUS, TRACK, theta), true);
 		rightMotor.rotate(-convertAngle(WHEEL_RADIUS, TRACK, theta), false);
 	}
-	
+
 	//Move forward method
 	public void forward(){
 		isNavigating = true;
@@ -392,14 +404,14 @@ public class Search extends Thread implements UltrasonicController{
 		leftMotor.forward();
 		rightMotor.forward();
 	}
-	
+
 	//Method for motors to stop at the same time
 	public void mStop(){
 		isNavigating = false;
 		leftMotor.stop(true);
 		rightMotor.stop(true);
 	}
-	
+
 	//convert distance to the angle of rotation of the wheels in degrees
 	public int convertDistance(double radius, double distance) {
 		return (int) ((180.0 * distance) / (Math.PI * radius));
@@ -409,7 +421,7 @@ public class Search extends Thread implements UltrasonicController{
 	public int convertAngle(double radius, double width, double angle) {
 		return convertDistance(radius, Math.PI * width * angle / 360.0);
 	}
-	
+
 	//Wrap Angle method
 	public double wrapAngle(double angle){
 		if(angle<0){
@@ -419,7 +431,7 @@ public class Search extends Thread implements UltrasonicController{
 		}
 		return angle;
 	}
-	
+
 	//Updates the destination angle from current position
 	public double getDestAngle(){
 		yCurrent = odo.getY();
@@ -428,16 +440,16 @@ public class Search extends Thread implements UltrasonicController{
 		return thetaDest;
 	}
 
-	
-	
+
+
 	// Boolean Methods
 	// Checking methods
-	
+
 	//Check if robot is navigating
 	public boolean isNavigating(){
 		return isNavigating;	
 	}
-	
+
 	public void setNavigating(boolean a){
 		isNavigating = a;
 	}
@@ -451,13 +463,13 @@ public class Search extends Thread implements UltrasonicController{
 		}else 
 			return false;
 	}
-		
-	
+
+
 	// Inherited methods from UScontroller
 	@Override
 	public void processUSData(double distance) {
 		this.distance = distance;
-        if(!notScanning){ 
+		if(!notScanning){ 
 			if(this.distance < rangeObject && this.distance > 3){
 				distObject = this.distance;
 				LCD.drawString("OBJECT DETECTED", 0, 6);
@@ -467,10 +479,10 @@ public class Search extends Thread implements UltrasonicController{
 				isChecked=false;
 				LCD.drawString("Nothing         ", 0, 6);
 				isDetected = false;
-	        }
-        }
+			}
+		}
 	}
-	
+
 	@Override
 	public double readUSDistance() {
 		return this.distance;

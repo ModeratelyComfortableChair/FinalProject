@@ -3,6 +3,7 @@
  */
 package master;
 
+
 import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
@@ -30,10 +31,10 @@ public class Main {
 	// Static Resources:
 	// Left motor connected to output A
 	// Right motor connected to output D
-	private static EV3LargeRegulatedMotor leftMotor = null; 
-			//new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
-	private static  EV3LargeRegulatedMotor rightMotor = null; 
-			//new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
+	private static EV3LargeRegulatedMotor leftMotor = 
+			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
+	private static  EV3LargeRegulatedMotor rightMotor = 
+			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 	private static EV3LargeRegulatedMotor lift1 = null;
 	private static EV3LargeRegulatedMotor lift2 = null;
 	
@@ -51,12 +52,14 @@ public class Main {
 	private static SensorMode colorProvider;
 	private static float[] colorSample;
 
+/*
     static{
 		String[] names = {"master", "slave"};
 	    RemoteRequestEV3[] bricks = new RemoteRequestEV3[names.length];
 	    try {
 	        for(int i = 1; i < names.length; i++)
-	            bricks[i] = new RemoteRequestEV3(BrickFinder.find(names[i])[0].getIPAddress());
+	        
+	        bricks[i] = new RemoteRequestEV3(BrickFinder.find(names[i])[0].getIPAddress());
 	        RegulatedMotor[] motors = new RegulatedMotor[bricks.length-1];
 	        leftMotor = new EV3LargeRegulatedMotor(BrickFinder.getLocal().getPort("A"));
 	        rightMotor = new EV3LargeRegulatedMotor(BrickFinder.getLocal().getPort("D"));
@@ -80,7 +83,7 @@ public class Main {
 	            System.out.println("Got exception: \n" + e);
 	            Delay.msDelay(1000);
 	    }
-    }
+    }*/
 	
 	//TODO Measure and obtain proper constants
 	//increasing radius reduces distance and turning angle
@@ -111,13 +114,13 @@ public class Main {
 		
 		@SuppressWarnings("resource")
 		SensorModes lightBackSensor = new EV3ColorSensor(colorBackPort);
-		
+		/*
 		@SuppressWarnings("resource")
 		SensorModes lightLeftSensor = new EV3ColorSensor(colorLeftPort);
 		
 		@SuppressWarnings("resource")
 		SensorModes lightRightSensor = new EV3ColorSensor(colorRightPort);
-						
+			*/			
 		
 		// some objects that need to be instantiated
 		final TextLCD t = LocalEV3.get().getTextLCD();
