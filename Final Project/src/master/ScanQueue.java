@@ -52,7 +52,7 @@ public class ScanQueue {
 	 * @return adds a new value to the queue, and returns true if the queue is filled and every value is below the boundary
 	 *
 	 */
-	public boolean checkAndAdd(double distance){
+	public boolean checkAndAddUnder(double distance){
 		if(distance == 0){
 			return false;
 		}
@@ -63,7 +63,21 @@ public class ScanQueue {
 		} else {
 			shiftQueue();
 			queue[queueSize - 1] = distance;
-			return checkQueue();
+			return checkQueueUnder();
+		}
+	}
+	public boolean checkAndAddOver(double distance){
+		if(distance == 0){
+			return false;
+		}
+		if(count < queueSize){
+			queue[count] = distance;
+			count++;
+			return false;
+		} else {
+			shiftQueue();
+			queue[queueSize - 1] = distance;
+			return checkQueueOver();
 		}
 	}
 	
@@ -81,12 +95,24 @@ public class ScanQueue {
 	 * Checks the queue to see if it is filled, and every value is below the boundary
 	 * @return true if queue is filled and every value is below boundary. false otherwise.
 	 */
-	public boolean checkQueue(){
+	public boolean checkQueueUnder(){
 		if(count < queueSize){
 			return false;
 		} 
 		for(int i = 0; i < queueSize; i++){
 			if(queue[i] > boundary){
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	public boolean checkQueueOver(){
+		if(count < queueSize){
+			return false;
+		} 
+		for(int i = 0; i < queueSize; i++){
+			if(queue[i] < boundary){
 				return false;
 			}
 		}

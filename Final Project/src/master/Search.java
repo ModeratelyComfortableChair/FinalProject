@@ -32,8 +32,9 @@ public class Search extends Thread implements UltrasonicController{
 	public double thetaDest;
 	public double WHEEL_RADIUS;
 	public double TRACK;
-	private static final int FORWARD_SPEED = 150, ROTATE_SPEED = 100, ACCELERATION = 1000, SCAN_SPEED = 20, SCAN_SIZE = 25, ID_SIZE = 20, ID_TIME = 2000;
-	private static final double SCAN_RADIUS = 60.96;
+	private static final int FORWARD_SPEED = 150, ROTATE_SPEED = 100, ACCELERATION = 1000, SCAN_SPEED = 20, SCAN_SIZE = 25, ID_SIZE = 35, ID_DISTANCE = 8, ID_TIME = 2000;
+	private static final double SCAN_RADIUS = 60.96, ID_RADIUS = 15;
+	private static final int IGNORE_SIZE = 3;
 	//other rotation speed
 	private static int RSPEED = 50, counter=0;
 
@@ -149,36 +150,74 @@ public class Search extends Thread implements UltrasonicController{
 				usLower.enable();
 				scanStartAngle = (odo.getTheta())*(180.0/Math.PI);
 				ScanQueue scanQueue = new ScanQueue(SCAN_SIZE, SCAN_RADIUS);
-				ScanQueue idQueue = new ScanQueue(ID_SIZE, SCAN_RADIUS);
-				nav.rotateOnSpot(SCAN_SPEED);
+				ScanQueue idQueue = new ScanQueue(ID_SIZE, ID_RADIUS);
+				ScanQueue ignoreQueue = null;
 				double distance;
 				boolean block = true;
+				boolean moved;
+				double[] scanLocation = {0, 0, 0};
+				double[] idPosition = {0, 0, 0};
+				odo.getPosition(scanLocation, new boolean[] {true, true, true});
 				while(odo.getTheta()*(180.0/Math.PI) <= scanStartAngle + 90){
+					nav.rotateOnSpot(SCAN_SPEED);
 					distance = usLower.filterData();
-					if(scanQueue.checkAndAdd(distance)){
-						nav.stopMotors();
-						coinSound();
-						usLower.disable();
-						scanQueue.clearQueue();
-						//Pull and update values for ID_TIME. Update block boolean if we detect it
-						usUpper.enable();
-						double startTime = System.currentTimeMillis();
-						double currentTime = System.currentTimeMillis();
-						while(currentTime - startTime < ID_TIME){
-							distance = usUpper.filterData();
-							if(idQueue.checkAndAdd(distance)){block = false;}
+					moved = false;
+					if(block){
+						if(scanQueue.checkAndAddUnder(distance)){
+							nav.stopMotors();
 							coinSound();
-							currentTime = System.currentTimeMillis();
+							usLower.disable();
+							ignoreQueue = new ScanQueue(IGNORE_SIZE, scanQueue.getAverage());
+							double closingDistance = scanQueue.getAverage() - ID_DISTANCE;
+							if(closingDistance > 0){
+								nav.driveDistanceForward(closingDistance);
+								moved = true;
+							}
+							scanQueue.clearQueue();
+							//Pull and update values for ID_TIME. Update block boolean if we detect it
+							usUpper.enable();
+
+							double startTime = System.currentTimeMillis();
+							double currentTime = System.currentTimeMillis();
+							while(currentTime - startTime < ID_TIME){
+								distance = usUpper.filterData();
+								if(idQueue.checkAndAddUnder(distance)){
+									block = false;
+									Sound.beep();
+								}
+								currentTime = System.currentTimeMillis();
+							}
+							usUpper.disable();
+							//TODO write code for picking up block
+							if(block){
+								Sound.playNote(a, 440, 250);
+								moved = true;
+							} else {	//TODO Write code for ignoring object
+								Sound.beep();
+								
+							}
+							if(moved){
+								odo.getPosition(idPosition, new boolean[]{true, true, true});
+								nav.getOdometerInfo();
+								nav.travelTo(scanLocation[0], scanLocation[1]);
+								nav.turnTo(nav.getAngle(odo.getX(), odo.getY(), idPosition[0], idPosition[1], nav.getOrientation()));
+							}
+							idQueue.clearQueue();
+							usLower.enable();
+							moved = false;
+
 						}
-						//TODO write code for picking up block
-						if(block){
-							coinSound();
-						} else {	//TODO Write code for ignoring object
-							Sound.beep();
+					} else {
+						if(ignoreQueue.checkAndAddOver(distance)){
+							block = true;
+							ignoreQueue.clearQueue();
+						} else {
+							System.out.print(" Ignoring ");
 						}
 					}
 
 				}
+				usLower.disable();
 				nav.stopMotors();
 				nav.getOdometerInfo();
 				break;

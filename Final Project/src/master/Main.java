@@ -56,14 +56,13 @@ public class Main {
 	private static SensorMode colorProvider;
 	private static float[] colorSample;
 
-
+/*
     static{
 		String[] names = {"master", "slave"};
 	    RemoteRequestEV3[] bricks = new RemoteRequestEV3[names.length];
 	    try {
 	        for(int i = 1; i < names.length; i++)
-	        
-	        bricks[i] = new RemoteRequestEV3(BrickFinder.find(names[i])[0].getIPAddress());
+	        	bricks[i] = new RemoteRequestEV3(BrickFinder.find(names[i])[0].getIPAddress());
 	        RegulatedMotor[] motors = new RegulatedMotor[bricks.length-1];
 	        leftMotor = new EV3LargeRegulatedMotor(BrickFinder.getLocal().getPort("A"));
 	        rightMotor = new EV3LargeRegulatedMotor(BrickFinder.getLocal().getPort("D"));
@@ -88,7 +87,7 @@ public class Main {
 	            Delay.msDelay(1000);
 	    }
     }
-	
+	*/
 	//TODO Measure and obtain proper constants
 	//increasing radius reduces distance and turning angle
 	//increasing width increases turning
@@ -133,8 +132,8 @@ public class Main {
 		OdometryDisplay odometryDisplay = new OdometryDisplay(odo,t);
 		Navigation nav = new Navigation(odo, leftMotor, rightMotor);
 		
-		USPoller usLowerPoller = new USPoller(usUpperSensor);
-		USPoller usUpperPoller = new USPoller(usLowerSensor);
+		USPoller usLowerPoller = new USPoller(usLowerSensor);
+		USPoller usUpperPoller = new USPoller(usUpperSensor);
 		LightPoller lightBackPoller = new LightPoller(lightBackSensor);
 		
 		//Localization and it's localizer arguments
@@ -184,6 +183,7 @@ public class Main {
 			odo.start();
 			odometryDisplay.start();
 			usLowerPoller.start();
+			usUpperPoller.start();
 			searcher.start();
 						
 		}

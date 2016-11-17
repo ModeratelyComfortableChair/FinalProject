@@ -1,0 +1,6 @@
+master
+master.communication
+master.localization
+master.odometry
+master.poller
+master.wifi

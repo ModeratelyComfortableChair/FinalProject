@@ -64,6 +64,13 @@ public class Navigation {
 		leftMotor.backward();
 		rightMotor.backward();
 	}
+	
+	public void driveDistanceForward(double distance){
+		leftMotor.setSpeed(FORWARD_SPEED);									//Set Wheel speeds
+		rightMotor.setSpeed(FORWARD_SPEED);
+		leftMotor.rotate(convertDistance(leftRadius, distance), true);		//Rotate Wheels
+		rightMotor.rotate(convertDistance(rightRadius, distance), false);
+	}
 
 	/**
 	 * travelTo takes in a desired x and y position, and Moves the robot to that position
@@ -153,7 +160,7 @@ public class Navigation {
 	 * @return integer of the angle needed to rotate in order to face new position
 	 */
 
-	private static int getAngle(double x1, double y1, double x2, double y2, int orientation){
+	public int getAngle(double x1, double y1, double x2, double y2, int orientation){
 		double diffX = x2 - x1;
 		double diffY = y2 - y1;
 		int angle = 0;
