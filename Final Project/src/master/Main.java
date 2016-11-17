@@ -34,10 +34,10 @@ public class Main {
 	// Static Resources:
 	// Left motor connected to output A
 	// Right motor connected to output D
-	private static EV3LargeRegulatedMotor leftMotor = 
-			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
-	private static  EV3LargeRegulatedMotor rightMotor = 
-			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
+	private static EV3LargeRegulatedMotor leftMotor = null;
+//			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
+	private static  EV3LargeRegulatedMotor rightMotor = null;
+//			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 	private static EV3LargeRegulatedMotor lift1 = null;
 	private static EV3LargeRegulatedMotor lift2 = null;
 	private static RegulatedMotor claw = null;
@@ -56,7 +56,7 @@ public class Main {
 	private static SensorMode colorProvider;
 	private static float[] colorSample;
 
-/*
+
     static{
 		String[] names = {"master", "slave"};
 	    RemoteRequestEV3[] bricks = new RemoteRequestEV3[names.length];
@@ -72,8 +72,8 @@ public class Main {
 	        	int [] a = {4, 25, 500, 7000, 5};	// Array that determines instrument: Piano
 	            Sound.playNote(a, 440, 200);
 	        	claw = bricks[i].createRegulatedMotor("A", 'L'); //Claw
-	        	Port colorLeftPort = bricks[i].getPort("S1");	//Remote Sensor1
-	        	Port colorRightPort = bricks[i].getPort("S2");	//Remote Sensor2
+//	        	Port colorLeftPort = bricks[i].getPort("S1");	//Remote Sensor1
+//	        	Port colorRightPort = bricks[i].getPort("S2");	//Remote Sensor2
 //		        EV3ColorSensor csL = new EV3ColorSensor(colorLeftPort);
 //		        EV3ColorSensor csR = new EV3ColorSensor(colorRightPort);
 //				colorProvider = cs.getRedMode();
@@ -87,7 +87,7 @@ public class Main {
 	            Delay.msDelay(1000);
 	    }
     }
-	*/
+	
 	//TODO Measure and obtain proper constants
 	//increasing radius reduces distance and turning angle
 	//increasing width increases turning
@@ -176,6 +176,13 @@ public class Main {
 //			Data[3] is Zone Upper X
 //			Data[4] is Zone Upper Y
 			corner=StartCorner.lookupCorner(Data[0]).getCooridinates();
+			searcher.setCorner(corner);
+			// start the odometer, the odometry display
+			odo.start();
+			odometryDisplay.start();
+			usLowerPoller.start();
+			usUpperPoller.start();
+			searcher.start();
 			
 		}else{
 			

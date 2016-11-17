@@ -72,7 +72,9 @@ public class Search extends Thread implements UltrasonicController{
 	private USPoller usLower;
 	private USPoller usUpper;
 	private double scanStartAngle;
+	private int[] corner = new int[2];
 
+	
 	// Enum declaration/initialization
 	enum State {INIT, SCAN, TURNING, TRAVELLING, IDENTIFY, EMERGENCY, TARGET};
 
@@ -121,7 +123,6 @@ public class Search extends Thread implements UltrasonicController{
 	// Setup Threads
 	AvoidObstacle avoidance = null;
 
-
 	// Run method
 	/**
 	 * Method that extends from Thread
@@ -139,6 +140,19 @@ public class Search extends Thread implements UltrasonicController{
 				if(!localized){
 					localization.localize();
 					localized = true;
+					if(corner[0] == 0){
+						if(corner[1] == 0){
+							odo.setPosition(new double[]{0,0,0}, new boolean[]{true, true, true});
+						} else {
+							odo.setPosition(new double[]{corner[0],corner[1],90}, new boolean[]{true, true, true});
+						}
+					}else{
+						if(corner[1] == 0){
+							odo.setPosition(new double[]{300,0,270}, new boolean[]{true, true, true});
+						} else {
+							odo.setPosition(new double[]{corner[0],corner[1],180}, new boolean[]{true, true, true});
+						}
+					}
 				}
 
 				state = State.SCAN;
@@ -506,6 +520,13 @@ public class Search extends Thread implements UltrasonicController{
 	}
 
 
+	//Setter method for corner
+	public void setCorner(int[] a){
+		this.corner = a;
+	}
+	
+	
+	
 	// Inherited methods from UScontroller
 	@Override
 	public void processUSData(double distance) {
