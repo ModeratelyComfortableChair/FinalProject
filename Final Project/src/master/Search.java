@@ -130,7 +130,7 @@ public class Search extends Thread implements UltrasonicController{
 	 * that handles the search for styrofoam blocks
 	 */
 	public void run(){
-		State state = State.SCAN;
+		State state = State.INIT;
 		while(true){
 			switch(state){
 			case INIT:
@@ -154,7 +154,8 @@ public class Search extends Thread implements UltrasonicController{
 						}
 					}
 				}
-
+				LCD.drawString("Corner x: " + Integer.toString(corner[0]), 0, 6);
+				LCD.drawString("Corner y: " + Integer.toString(corner[1]), 0, 7);
 				state = State.SCAN;
 				break;
 
