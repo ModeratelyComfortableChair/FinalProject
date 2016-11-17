@@ -142,7 +142,7 @@ public class Main {
 		LocalizationMaster localization = new LocalizationMaster(usLocalizer, lightLocalizer);
 		
 		
-		Search searcher = new Search(odo, nav, turner, hook, localization, usLowerPoller, usUpperPoller);
+		Search searcher = new Search(odo, nav, lift1, lift2, claw, usLowerPoller, usUpperPoller);
 		Communication com = new Communication();
 		
 		

@@ -63,8 +63,8 @@ public class Search extends Thread implements UltrasonicController{
 	public boolean notScanning = true;
 
 	// Initialization of some variables
-	public EV3LargeRegulatedMotor leftMotor, rightMotor, hook; 	//They are public because AvoidObstacle calls them
-	public EV3MediumRegulatedMotor turner;
+	public EV3LargeRegulatedMotor leftMotor, rightMotor, lift1, lift2; 	//They are public because AvoidObstacle calls them
+	public RegulatedMotor claw;
 	public Odometer odo;
 	private Navigation nav;
 	private LocalizationMaster localization;
@@ -91,7 +91,7 @@ public class Search extends Thread implements UltrasonicController{
 	 * @param colorData Data from Color Sensor
 	 * @param localization Localization Class
 	 */
-	public Search(Odometer odometer, Navigation nav, EV3MediumRegulatedMotor turner, EV3LargeRegulatedMotor hook, LocalizationMaster localization, USPoller usLower, USPoller usHigher) {
+	public Search(Odometer odometer, Navigation nav, EV3LargeRegulatedMotor lift1, EV3LargeRegulatedMotor lift2, RegulatedMotor claw, LocalizationMaster localization, USPoller usLower, USPoller usHigher) {
 		//Set variables
 		this.xCurrent = 0;
 		this.yCurrent = 0;
@@ -107,8 +107,9 @@ public class Search extends Thread implements UltrasonicController{
 		EV3LargeRegulatedMotor[] motors = this.odo.getMotors();
 		this.leftMotor = motors[0];
 		this.rightMotor = motors[1];
-		this.turner = turner;
-		this.hook = hook;
+		this.lift1 = lift1;
+		this.lift2 = lift2;
+		this.claw = claw;
 
 		// set acceleration
 		this.leftMotor.setAcceleration(ACCELERATION);
@@ -204,6 +205,13 @@ public class Search extends Thread implements UltrasonicController{
 							}
 							usUpper.disable();
 							//TODO write code for picking up block
+							
+							lift1.rotate(-2280, true);
+							lift2.rotate(-2280, false);
+							claw.rotate(-90, false);
+							lift1.rotate(2280, true);
+							lift2.rotate(2280, false);
+							
 							if(block){
 								Sound.playNote(a, 440, 250);
 								moved = true;
