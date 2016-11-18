@@ -141,6 +141,8 @@ public class Search extends Thread implements UltrasonicController{
 				LCD.drawString("INIT", 0, 5);
 				double angle;
 				if(!localized){
+					odo.getPosition(new double[]{0, 0, 0}, new boolean[]{true, true, true});
+					nav.getOdometerInfo();
 					localization.localize();
 					localized = true;
 					if(corner[0] == 0){
@@ -225,13 +227,8 @@ public class Search extends Thread implements UltrasonicController{
 								claw.rotate(0,false);
 								lift1.rotate(-2450, true);
 								lift2.rotate(-2450, false);
-								usLower.enable();
-								for(int i = 0; i < 3; i++){
-									closeQueue.checkAndAddUnder(usLower.filterData());	
-								}
-								nav.driveDistanceForward(closeQueue.getAverage());
-								closeQueue.clearQueue();
-								usLower.disable();
+								
+								nav.driveDistanceForward(10);
 								//								nav.rotate(-35);
 								//								nav.rotate(70);
 								//								nav.rotate(-35);
@@ -240,8 +237,8 @@ public class Search extends Thread implements UltrasonicController{
 								lift2.rotate(2450, false);
 								nav.travelTo(zone[0], zone[1]);
 								nav.turnTo(nav.getAngle(zone[0], zone[1], zone[2], zone[3], nav.getOrientation()));
-								lift1.rotate(-2450, true);
-								lift2.rotate(-2450, false);
+								//lift1.rotate(-2450, true);
+								//lift2.rotate(-2450, false);
 								claw.rotateTo(0);
 								break;
 								//claw.flt();
