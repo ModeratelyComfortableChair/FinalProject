@@ -42,7 +42,7 @@ public class Communication {
      * 2. TEAM_NUMBER: your project team number
      * */
  
-    private static final String SERVER_IP = "192.168.2.15";
+    private static final String SERVER_IP = "192.168.2.9";
     private static final int TEAM_NUMBER = 12;
 //  private static Integer corner;
     private static Integer[] GreenZone = {0,0,0,0,0};

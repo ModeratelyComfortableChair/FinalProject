@@ -7,6 +7,7 @@ import lejos.hardware.Sound;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.motor.EV3MediumRegulatedMotor;
+import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 import master.localization.LocalizationMaster;
@@ -73,6 +74,7 @@ public class Search extends Thread implements UltrasonicController{
 	private USPoller usUpper;
 	private double scanStartAngle;
 	private int[] corner = new int[2];
+	private int[] zone = new int[4];
 
 	
 	// Enum declaration/initialization
@@ -205,16 +207,30 @@ public class Search extends Thread implements UltrasonicController{
 							}
 							usUpper.disable();
 							//TODO write code for picking up block
-							
-							lift1.rotate(-2280, true);
-							lift2.rotate(-2280, false);
-							claw.rotate(-90, false);
-							lift1.rotate(2280, true);
-							lift2.rotate(2280, false);
-							
 							if(block){
 								Sound.playNote(a, 440, 250);
 								moved = true;
+
+								lift1.setAcceleration(300);
+								lift2.setAcceleration(300);
+								claw.setAcceleration(100);
+								lift1.setSpeed(200);
+								lift2.setSpeed(200);
+								claw.setSpeed(100);
+								
+								lift1.rotate(-2350, true);
+								lift2.rotate(-2350, false);
+								claw.rotate(0);
+								nav.driveDistanceForward(10);
+//								nav.rotate(-35);
+//								nav.rotate(70);
+//								nav.rotate(-35);
+								claw.rotate(-90, false);
+								lift1.rotate(2350, true);
+								lift2.rotate(2350, false);
+								state = State.TARGET;
+								break;
+								//claw.flt();
 							} else {	//TODO Write code for ignoring object
 								Sound.beep();
 								
@@ -228,7 +244,6 @@ public class Search extends Thread implements UltrasonicController{
 							idQueue.clearQueue();
 							usLower.enable();
 							moved = false;
-
 						}
 					} else {
 						if(ignoreQueue.checkAndAddOver(distance)){
@@ -286,10 +301,11 @@ public class Search extends Thread implements UltrasonicController{
 			case TARGET:								//Catch block and travel to goal
 				LCD.drawString("            ", 0, 5);
 				LCD.drawString("TARGET", 0, 5);
-				//Catch block
 
 				//travelTo goal
-
+				nav.travelTo((zone[2]+zone[0])/2, (zone[3]+zone[1])/2);
+				claw.flt();
+				nav.travelTo(0, 0);
 				state = State.INIT;
 
 			}
@@ -534,7 +550,10 @@ public class Search extends Thread implements UltrasonicController{
 		this.corner = a;
 	}
 	
-	
+	//Set zone
+	public void setZone(int[] b){
+		this.zone = b;
+	}
 	
 	// Inherited methods from UScontroller
 	@Override
