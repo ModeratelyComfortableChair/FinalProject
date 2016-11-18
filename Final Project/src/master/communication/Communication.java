@@ -42,7 +42,7 @@ public class Communication {
      * 2. TEAM_NUMBER: your project team number
      * */
  
-    private static final String SERVER_IP = "192.168.2.17";
+    private static final String SERVER_IP = "192.168.2.9";
     private static final int TEAM_NUMBER = 12;
 //  private static Integer corner;
     private static Integer[] GreenZone = {0,0,0,0,0};
@@ -69,7 +69,7 @@ public class Communication {
         WifiConnection conn = null;
         try {
             System.out.println("Connecting...");
-            conn = new WifiConnection(SERVER_IP, TEAM_NUMBER, true);
+            conn = new WifiConnection(SERVER_IP, TEAM_NUMBER, false);
         } catch (IOException e) {
             System.out.println("Connection failed");
         }

@@ -142,7 +142,7 @@ public class Main {
 		LocalizationMaster localization = new LocalizationMaster(usLocalizer, lightLocalizer);
 		
 		
-		Search searcher = new Search(odo, nav, turner, hook, localization, usLowerPoller, usUpperPoller);
+		Search searcher = new Search(odo, nav, lift1, lift2, claw, localization, usLowerPoller, usUpperPoller);
 		Communication com = new Communication();
 		
 		
@@ -177,6 +177,7 @@ public class Main {
 //			Data[4] is Zone Upper Y
 			corner=StartCorner.lookupCorner(Data[0]).getCooridinates();
 			searcher.setCorner(corner);
+			searcher.setZone(new int[] {Data[1],Data[2],Data[3],Data[4]});
 			// start the odometer, the odometry display
 			odo.start();
 			odometryDisplay.start();

@@ -382,4 +382,10 @@ public class Navigation {
 			return "IDK";
 		}
 	}
+	
+	//rotate method
+	public void rotate(double theta){
+		leftMotor.rotate(convertAngle(leftRadius, width, theta), true);
+		rightMotor.rotate(-convertAngle(leftRadius, width, theta), false);
+	}
 }

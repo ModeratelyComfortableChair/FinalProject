@@ -7,6 +7,7 @@ import lejos.hardware.Sound;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.motor.EV3MediumRegulatedMotor;
+import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
 import master.localization.LocalizationMaster;
 import master.odometry.Odometer;
@@ -61,8 +62,8 @@ public class Search extends Thread implements UltrasonicController{
 	public boolean notScanning = true;
 
 	// Initialization of some variables
-	public EV3LargeRegulatedMotor leftMotor, rightMotor, hook; 	//They are public because AvoidObstacle calls them
-	public EV3MediumRegulatedMotor turner;
+	public EV3LargeRegulatedMotor leftMotor, rightMotor, lift1, lift2; 	//They are public because AvoidObstacle calls them
+	public RegulatedMotor claw;
 	public Odometer odo;
 	private Navigation nav;
 	private LocalizationMaster localization;
@@ -71,8 +72,9 @@ public class Search extends Thread implements UltrasonicController{
 	private USPoller usUpper;
 	private double scanStartAngle;
 	private int[] corner = new int[2];
+	private int[] zone = new int[4];
 
-	
+
 	// Enum declaration/initialization
 	enum State {INIT, SCAN, TURNING, TRAVELLING, IDENTIFY, EMERGENCY, TARGET};
 
@@ -89,7 +91,7 @@ public class Search extends Thread implements UltrasonicController{
 	 * @param colorData Data from Color Sensor
 	 * @param localization Localization Class
 	 */
-	public Search(Odometer odometer, Navigation nav, EV3MediumRegulatedMotor turner, EV3LargeRegulatedMotor hook, LocalizationMaster localization, USPoller usLower, USPoller usHigher) {
+	public Search(Odometer odometer, Navigation nav, EV3LargeRegulatedMotor lift1, EV3LargeRegulatedMotor lift2, RegulatedMotor claw, LocalizationMaster localization, USPoller usLower, USPoller usHigher) {
 		//Set variables
 		this.xCurrent = 0;
 		this.yCurrent = 0;
@@ -105,8 +107,9 @@ public class Search extends Thread implements UltrasonicController{
 		EV3LargeRegulatedMotor[] motors = this.odo.getMotors();
 		this.leftMotor = motors[0];
 		this.rightMotor = motors[1];
-		this.turner = turner;
-		this.hook = hook;
+		this.lift1 = lift1;
+		this.lift2 = lift2;
+		this.claw = claw;
 
 		// set acceleration
 		this.leftMotor.setAcceleration(ACCELERATION);
@@ -128,7 +131,7 @@ public class Search extends Thread implements UltrasonicController{
 	 * that handles the search for styrofoam blocks
 	 */
 	public void run(){
-		State state = State.SCAN;
+		State state = State.INIT;
 		while(true){
 			switch(state){
 			case INIT:
@@ -152,7 +155,8 @@ public class Search extends Thread implements UltrasonicController{
 						}
 					}
 				}
-
+				LCD.drawString("Corner x: " + Integer.toString(corner[0]), 0, 6);
+				LCD.drawString("Corner y: " + Integer.toString(corner[1]), 0, 7);
 				state = State.SCAN;
 				break;
 
@@ -202,9 +206,30 @@ public class Search extends Thread implements UltrasonicController{
 							if(block){
 								Sound.playNote(a, 440, 250);
 								moved = true;
+								lift1.setAcceleration(300);
+								lift2.setAcceleration(300);
+								claw.setAcceleration(100);
+								lift1.setSpeed(200);
+								lift2.setSpeed(200);
+								claw.setSpeed(100);
+
+								lift1.rotate(-2350, true);
+								lift2.rotate(-2350, false);
+								claw.rotate(0);
+								nav.driveDistanceForward(10);
+								//								nav.rotate(-35);
+								//								nav.rotate(70);
+								//								nav.rotate(-35);
+								claw.rotate(-90, false);
+								lift1.rotate(2350, true);
+								lift2.rotate(2350, false);
+								state = State.TARGET;
+								break;
+								//claw.flt();
+
 							} else {
 								Sound.beep();
-								
+
 							}
 							if(moved){
 								odo.getPosition(idPosition, new boolean[]{true, true, true});
@@ -216,15 +241,15 @@ public class Search extends Thread implements UltrasonicController{
 							usLower.enable();
 							moved = false;
 
-						}
-					} else {	//Timed Ignorance of wooden block
-						startTime = System.currentTimeMillis();
-						currentTime = System.currentTimeMillis();
-						while(currentTime - startTime < IGNORE_TIME){
+						} else {	//Timed Ignorance of wooden block
+							startTime = System.currentTimeMillis();
 							currentTime = System.currentTimeMillis();
-							System.out.print(" Ignoring ");
+							while(currentTime - startTime < IGNORE_TIME){
+								currentTime = System.currentTimeMillis();
+								System.out.print(" Ignoring ");
+							}
+							block = true;
 						}
-						block = true;
 					}
 
 				}
@@ -274,10 +299,11 @@ public class Search extends Thread implements UltrasonicController{
 			case TARGET:								//Catch block and travel to goal
 				LCD.drawString("            ", 0, 5);
 				LCD.drawString("TARGET", 0, 5);
-				//Catch block
 
 				//travelTo goal
-
+				nav.travelTo((zone[2]+zone[0])/2, (zone[3]+zone[1])/2);
+				claw.flt();
+				nav.travelTo(0, 0);
 				state = State.INIT;
 
 			}
@@ -521,9 +547,12 @@ public class Search extends Thread implements UltrasonicController{
 	public void setCorner(int[] a){
 		this.corner = a;
 	}
-	
-	
-	
+
+	//Set zone
+	public void setZone(int[] b){
+		this.zone = b;
+	}
+
 	// Inherited methods from UScontroller
 	@Override
 	public void processUSData(double distance) {
