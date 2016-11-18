@@ -3,6 +3,7 @@ package master.localization;
 import lejos.hardware.Sound;
 import lejos.hardware.lcd.LCD;
 import master.Navigation;
+import master.ScanQueue;
 import master.odometry.Odometer;
 import master.poller.USPoller;
 
@@ -23,12 +24,12 @@ import master.poller.USPoller;
 public class USLocalizer implements Localizer{
 
 	//TODO: Change all values except TILE_WIDTH_CM
-	public static final double LOW_ROTATION_SPEED = 60;				//Speed to rotate while distance < SPEED_BOUNDARY
-	public static final double HIGH_ROTATION_SPEED = 120;			//Speed to rotate while distance > SPEED_BOUNDARY
-	public static final double MAX_DISTANCE = 43.10;					//Distance at which to stop and latch angle
-	public static final double SPEED_BOUNDARY = 120;					//Distance at which to switch speeds
+	public static final double LOW_ROTATION_SPEED = 70;				//Speed to rotate while distance < SPEED_BOUNDARY
+	public static final double HIGH_ROTATION_SPEED = 70;			//Speed to rotate while distance > SPEED_BOUNDARY
+	public static final double MAX_DISTANCE = 30;					//Distance at which to stop and latch angle
+	public static final double SPEED_BOUNDARY = 10000;					//Distance at which to switch speeds
 	public static final double MOMENT = 9.3;						//Distance between US sensor and center of rotation
-	public static final double TILE_WIDTH_CM = 30.48;				//Width of distance	
+	public static final double TILE_WIDTH_CM = 17;				//Width of distance	
 	public static final double FILTER = 200;						//USPoller max readable distance
 	
 	private Odometer odo;
@@ -54,7 +55,7 @@ public class USLocalizer implements Localizer{
 	@Override
 	public void localize() {
 		
-		
+		ScanQueue localQueue = new ScanQueue(7, MAX_DISTANCE);
 		double angleA = 0;
 		double angleB = 0;
 		double theta;
@@ -82,12 +83,13 @@ public class USLocalizer implements Localizer{
 				Sound.beep();
 				nav.stopMotors();
 				lastEdge = edge;
+				localQueue.clearQueue();
 				try {Thread.sleep(1000);} catch (InterruptedException e) {}
 			}
 			
 			//Now we are definitely not facing the wall
 			nav.rotateOnSpot((int) HIGH_ROTATION_SPEED);
-			try {Thread.sleep(1000);} catch (InterruptedException e) {}
+			try {Thread.sleep(3000);} catch (InterruptedException e) {}
 			edge = getFilteredData();
 
 			while(edge > MAX_DISTANCE ){
@@ -109,7 +111,7 @@ public class USLocalizer implements Localizer{
 			try {Thread.sleep(1000);} catch (InterruptedException e) {}
 			
 			nav.rotateOnSpot((int) -HIGH_ROTATION_SPEED);						// keep rotating ccw until the robot sees another wall
-			try {Thread.sleep(1000);} catch (InterruptedException e) {}		//Initial delay so we don't detect the same angle
+			try {Thread.sleep(3000);} catch (InterruptedException e) {}		//Initial delay so we don't detect the same angle
 			edge = getFilteredData();
 			while(edge > MAX_DISTANCE || edge > lastEdge){
 				if(edge > SPEED_BOUNDARY){

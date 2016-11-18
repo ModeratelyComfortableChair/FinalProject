@@ -3,7 +3,6 @@
  */
 package master;
 
-
 import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;

@@ -24,6 +24,7 @@ import java.util.HashMap;
  
 import master.wifi.WifiConnection;
 import lejos.hardware.Button;
+import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.TextLCD;
  
@@ -42,7 +43,7 @@ public class Communication {
      * 2. TEAM_NUMBER: your project team number
      * */
  
-    private static final String SERVER_IP = "192.168.2.9";
+    private static final String SERVER_IP = "192.168.2.6";
     private static final int TEAM_NUMBER = 12;
 //  private static Integer corner;
     private static Integer[] GreenZone = {0,0,0,0,0};
@@ -69,7 +70,7 @@ public class Communication {
         WifiConnection conn = null;
         try {
             System.out.println("Connecting...");
-            conn = new WifiConnection(SERVER_IP, TEAM_NUMBER, false);
+            conn = new WifiConnection(SERVER_IP, TEAM_NUMBER, true);
         } catch (IOException e) {
             System.out.println("Connection failed");
         }
@@ -88,6 +89,7 @@ public class Communication {
             } else {
                 System.out.println("Transmission read:\n" + t.toString());
             }
+            Sound.beep();
             if(t.get("BTN") == TEAM_NUMBER){
 //              corner = t.get("BSC");
 //              GreenZone = {t.get("LGZx"), t.get("LGZy"), t.get("UGZx"), t.get("UGZy")};

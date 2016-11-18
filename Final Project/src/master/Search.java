@@ -32,8 +32,9 @@ public class Search extends Thread implements UltrasonicController{
 	public double thetaDest;
 	public double WHEEL_RADIUS;
 	public double TRACK;
-	private static final int FORWARD_SPEED = 150, ROTATE_SPEED = 100, ACCELERATION = 1000, SCAN_SPEED = 20, SCAN_SIZE = 25, ID_SIZE = 35, ID_DISTANCE = 8, IGNORE_TIME = 1000;
+	private static final int FORWARD_SPEED = 150, ROTATE_SPEED = 100, ACCELERATION = 1000, SCAN_SPEED = 20, SCAN_SIZE = 25, ID_SIZE = 35, ID_DISTANCE = 6, IGNORE_TIME = 1000;
 	private static final double SCAN_RADIUS = 60.96, ID_RADIUS = 15;
+	private static final double SAFE_DETECTION = 40;
 	//other rotation speed
 	private static int RSPEED = 50, counter=0;
 
@@ -91,7 +92,8 @@ public class Search extends Thread implements UltrasonicController{
 	 * @param colorData Data from Color Sensor
 	 * @param localization Localization Class
 	 */
-	public Search(Odometer odometer, Navigation nav, EV3LargeRegulatedMotor lift1, EV3LargeRegulatedMotor lift2, RegulatedMotor claw, LocalizationMaster localization, USPoller usLower, USPoller usHigher) {
+	public Search(Odometer odometer, Navigation nav, EV3LargeRegulatedMotor lift1, EV3LargeRegulatedMotor lift2,
+			RegulatedMotor claw, LocalizationMaster localization, USPoller usLower, USPoller usHigher) {
 		//Set variables
 		this.xCurrent = 0;
 		this.yCurrent = 0;
@@ -137,24 +139,27 @@ public class Search extends Thread implements UltrasonicController{
 			case INIT:
 				LCD.drawString("            ", 0, 5);
 				LCD.drawString("INIT", 0, 5);
-
+				double angle;
 				if(!localized){
 					localization.localize();
 					localized = true;
 					if(corner[0] == 0){
 						if(corner[1] == 0){
-							odo.setPosition(new double[]{0,0,0}, new boolean[]{true, true, true});
+							angle = 0;
 						} else {
-							odo.setPosition(new double[]{corner[0],corner[1],90}, new boolean[]{true, true, true});
+							angle = 90;
 						}
 					}else{
 						if(corner[1] == 0){
-							odo.setPosition(new double[]{300,0,270}, new boolean[]{true, true, true});
+							angle = 270;
 						} else {
-							odo.setPosition(new double[]{corner[0],corner[1],180}, new boolean[]{true, true, true});
+							angle = 180;
 						}
 					}
+					odo.setPosition(new double[]{corner[0],corner[1], angle}, new boolean[]{true, true, true});
 				}
+				nav.getOdometerInfo();
+				Victory(a);
 				LCD.drawString("Corner x: " + Integer.toString(corner[0]), 0, 6);
 				LCD.drawString("Corner y: " + Integer.toString(corner[1]), 0, 7);
 				state = State.SCAN;
@@ -167,10 +172,11 @@ public class Search extends Thread implements UltrasonicController{
 				scanStartAngle = (odo.getTheta())*(180.0/Math.PI);
 				ScanQueue scanQueue = new ScanQueue(SCAN_SIZE, SCAN_RADIUS);
 				ScanQueue idQueue = new ScanQueue(ID_SIZE, ID_RADIUS);
+				ScanQueue closeQueue = new ScanQueue(3, 100);
 				double distance, startTime, currentTime;
 				boolean block = true;
 				boolean moved;
-				double[] scanLocation = {0, 0, 0};
+				double[] scanLocation = {corner[0], corner[0], 0};
 				double[] idPosition = {0, 0, 0};
 				odo.getPosition(scanLocation, new boolean[] {true, true, true});
 				while(odo.getTheta()*(180.0/Math.PI) <= scanStartAngle + 90){
@@ -182,7 +188,11 @@ public class Search extends Thread implements UltrasonicController{
 							nav.stopMotors();
 							coinSound();
 							usLower.disable();
-							double closingDistance = scanQueue.getAverage() - ID_DISTANCE;
+							double average = scanQueue.getAverage();
+							if(average < SAFE_DETECTION){
+								nav.turnTo(30);
+							}
+							double closingDistance = average - ID_DISTANCE;
 							if(closingDistance > 0){
 								nav.driveDistanceForward(closingDistance);
 								moved = true;
@@ -212,18 +222,27 @@ public class Search extends Thread implements UltrasonicController{
 								lift1.setSpeed(200);
 								lift2.setSpeed(200);
 								claw.setSpeed(100);
-
-								lift1.rotate(-2350, true);
-								lift2.rotate(-2350, false);
-								claw.rotate(0);
-								nav.driveDistanceForward(10);
+								claw.rotate(0,false);
+								lift1.rotate(-2450, true);
+								lift2.rotate(-2450, false);
+								usLower.enable();
+								for(int i = 0; i < 3; i++){
+									closeQueue.checkAndAddUnder(usLower.filterData());	
+								}
+								nav.driveDistanceForward(closeQueue.getAverage());
+								closeQueue.clearQueue();
+								usLower.disable();
 								//								nav.rotate(-35);
 								//								nav.rotate(70);
 								//								nav.rotate(-35);
 								claw.rotate(-90, false);
-								lift1.rotate(2350, true);
-								lift2.rotate(2350, false);
-								state = State.TARGET;
+								lift1.rotate(2450, true);
+								lift2.rotate(2450, false);
+								nav.travelTo(zone[0], zone[1]);
+								nav.turnTo(nav.getAngle(zone[0], zone[1], zone[2], zone[3], nav.getOrientation()));
+								lift1.rotate(-2450, true);
+								lift2.rotate(-2450, false);
+								claw.rotateTo(0);
 								break;
 								//claw.flt();
 
@@ -236,20 +255,24 @@ public class Search extends Thread implements UltrasonicController{
 								nav.getOdometerInfo();
 								nav.travelTo(scanLocation[0], scanLocation[1]);
 								nav.turnTo(nav.getAngle(odo.getX(), odo.getY(), idPosition[0], idPosition[1], nav.getOrientation()));
+								if(block){
+									System.exit(0);
+								}
 							}
 							idQueue.clearQueue();
 							usLower.enable();
 							moved = false;
 
-						} else {	//Timed Ignorance of wooden block
-							startTime = System.currentTimeMillis();
-							currentTime = System.currentTimeMillis();
-							while(currentTime - startTime < IGNORE_TIME){
-								currentTime = System.currentTimeMillis();
-								System.out.print(" Ignoring ");
-							}
-							block = true;
+
 						}
+					} else {	//Timed Ignorance of wooden block
+						startTime = System.currentTimeMillis();
+						currentTime = System.currentTimeMillis();
+						while(currentTime - startTime < IGNORE_TIME){
+							currentTime = System.currentTimeMillis();
+							System.out.print(" Ignoring ");
+						}
+						block = true;
 					}
 
 				}
@@ -301,9 +324,8 @@ public class Search extends Thread implements UltrasonicController{
 				LCD.drawString("TARGET", 0, 5);
 
 				//travelTo goal
-				nav.travelTo((zone[2]+zone[0])/2, (zone[3]+zone[1])/2);
-				claw.flt();
-				nav.travelTo(0, 0);
+				
+				nav.travelTo(corner[0], corner[1]);
 				state = State.INIT;
 
 			}
@@ -574,6 +596,14 @@ public class Search extends Thread implements UltrasonicController{
 	@Override
 	public double readUSDistance() {
 		return this.distance;
+	}
+	private static void Victory(int[] a){
+		Sound.playNote(a, 440, 110);
+		Sound.playNote(a, 587, 110);
+		Sound.playNote(a, 740, 110);
+		Sound.playNote(a, 880, 220);
+		Sound.playNote(a, 740, 110);
+		Sound.playNote(a, 880, 320);
 	}
 
 }
