@@ -26,10 +26,10 @@ public class USLocalizer implements Localizer{
 	//TODO: Change all values except TILE_WIDTH_CM
 	public static final double LOW_ROTATION_SPEED = 70;				//Speed to rotate while distance < SPEED_BOUNDARY
 	public static final double HIGH_ROTATION_SPEED = 70;			//Speed to rotate while distance > SPEED_BOUNDARY
-	public static final double MAX_DISTANCE = 30;					//Distance at which to stop and latch angle
+	public static final double MAX_DISTANCE = 28;					//Distance at which to stop and latch angle
 	public static final double SPEED_BOUNDARY = 10000;					//Distance at which to switch speeds
 	public static final double MOMENT = 9.3;						//Distance between US sensor and center of rotation
-	public static final double TILE_WIDTH_CM = 17;				//Width of distance	
+	public static final double TILE_WIDTH_CM = 30.48;				//Width of distance	
 	public static final double FILTER = 200;						//USPoller max readable distance
 	
 	private Odometer odo;
