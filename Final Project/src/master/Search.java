@@ -218,23 +218,7 @@ public class Search extends Thread implements UltrasonicController{
 							if(block){
 								Sound.playNote(a, 440, 250);
 								moved = true;
-								lift1.setAcceleration(300);
-								lift2.setAcceleration(300);
-								claw.setAcceleration(100);
-								lift1.setSpeed(200);
-								lift2.setSpeed(200);
-								claw.setSpeed(100);
-								claw.rotate(0,false);
-								lift1.rotate(-2450, true);
-								lift2.rotate(-2450, false);
-								
-								nav.driveDistanceForward(10);
-								//								nav.rotate(-35);
-								//								nav.rotate(70);
-								//								nav.rotate(-35);
-								claw.rotate(-90, false);
-								lift1.rotate(2450, true);
-								lift2.rotate(2450, false);
+								blockCatch();
 								nav.travelTo(zone[0], zone[1]);
 								nav.turnTo(nav.getAngle(zone[0], zone[1], zone[2], zone[3], nav.getOrientation()));
 								//lift1.rotate(-2450, true);

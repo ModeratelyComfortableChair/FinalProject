@@ -1,7 +1,6 @@
 package master.localization;
 
 import lejos.hardware.Sound;
-import lejos.hardware.lcd.LCD;
 import master.Navigation;
 import master.ScanQueue;
 import master.odometry.Odometer;
@@ -25,7 +24,7 @@ public class USLocalizer implements Localizer{
 
 	//TODO: Change all values except TILE_WIDTH_CM
 	public static final double LOW_ROTATION_SPEED = 70;				//Speed to rotate while distance < SPEED_BOUNDARY
-	public static final double HIGH_ROTATION_SPEED = 70;			//Speed to rotate while distance > SPEED_BOUNDARY
+	public static final double HIGH_ROTATION_SPEED = 110;			//Speed to rotate while distance > SPEED_BOUNDARY
 	public static final double MAX_DISTANCE = 28;					//Distance at which to stop and latch angle
 	public static final double SPEED_BOUNDARY = 10000;					//Distance at which to switch speeds
 	public static final double MOMENT = 9.3;						//Distance between US sensor and center of rotation
@@ -84,7 +83,6 @@ public class USLocalizer implements Localizer{
 				nav.stopMotors();
 				lastEdge = edge;
 				localQueue.clearQueue();
-				try {Thread.sleep(1000);} catch (InterruptedException e) {}
 			}
 			
 			//Now we are definitely not facing the wall
@@ -162,10 +160,10 @@ public class USLocalizer implements Localizer{
 		try {Thread.sleep(2000);} catch (InterruptedException e) {}				//Get Y location with respect to wall
 		y = MOMENT - TILE_WIDTH_CM + getFilteredData();
 		
-		nav.turnTo(180);														//Face forward
+																//Face forward
 		try {Thread.sleep(2000);} catch (InterruptedException e) {}
 		
-		odo.setPosition(new double [] {x, y, 0}, new boolean [] {true, true, true});		//Update nav and odo, positions.
+		odo.setPosition(new double [] {x, y, 180}, new boolean [] {true, true, true});		//Update nav and odo, positions.
 		nav.getOdometerInfo();
 		nav.travelTo(0,0);
 		nav.turnTo(-nav.getOrientation());
