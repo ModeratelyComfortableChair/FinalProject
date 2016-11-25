@@ -299,7 +299,7 @@ public class Search extends Thread implements UltrasonicController{
 				}
 				break;
 			case IDENTIFY:									// IDENTIFY STATE
-				identify();
+				
 				if(isChecked && isBlock){
 
 					state = State.TARGET;
@@ -346,6 +346,58 @@ public class Search extends Thread implements UltrasonicController{
 		return this.isDetected;
 	}
 
+	
+	public void blockCatch(){
+		liftDown();
+		int turnAngle=20;
+		int distForward=20;
+		leftMotor.setSpeed(100);
+		rightMotor.setSpeed(100);
+		leftMotor.rotate(convertAngle(WHEEL_RADIUS, TRACK, turnAngle), true);
+		rightMotor.rotate(-convertAngle(WHEEL_RADIUS, TRACK, turnAngle), false);
+		leftMotor.rotate(-convertAngle(WHEEL_RADIUS, TRACK, turnAngle), true);
+		rightMotor.rotate(convertAngle(WHEEL_RADIUS, TRACK, turnAngle), false);
+		leftMotor.rotate(convertAngle(WHEEL_RADIUS, TRACK, distForward), true);
+		rightMotor.rotate(convertAngle(WHEEL_RADIUS, TRACK, distForward), false);
+		grab();
+		liftUp();
+	}
+	
+	
+	public void liftDown() {
+		lift1.setAcceleration(500);
+		lift2.setAcceleration(500);
+		lift1.setSpeed(100);
+		lift2.setSpeed(100);
+//		lift1.rotate(-1470,true);
+//		lift2.rotate(-1470,false);
+		lift1.rotate(-1070,true);
+		lift2.rotate(-1070,false);
+		lift2.setAcceleration(80);
+		lift1.setAcceleration(80);
+		lift1.setSpeed(50);
+		lift2.setSpeed(50);
+		claw.rotateTo(45);
+		lift1.rotate(-400,true);
+		lift2.rotate(-400,false);
+	}
+	
+	public void liftUp(){
+		lift1.setAcceleration(500);
+		lift2.setAcceleration(500);
+		lift1.setSpeed(100);
+		lift2.setSpeed(100);
+		lift1.rotate(1470,true);
+		lift2.rotate(1470,false);
+	}
+
+	public void grab() {
+		lift2.setAcceleration(80);
+		lift1.setAcceleration(80);
+		lift1.setSpeed(50);
+		lift2.setSpeed(50);
+		claw.rotateTo(0);
+	}
 
 	// Return Object's X-coordinate
 	public double targetX(double dist){
@@ -386,54 +438,10 @@ public class Search extends Thread implements UltrasonicController{
 	}
 
 
-	//Intermediate method that calls checkisBlock if
-	//the object has not been checked yet
-	public void identify(){			
-		isNavigating = false;
-		notScanning=true;
-		if(!withinRange()){
-			LCD.drawString("             ", 0, 7);
-			isChecked=false;
-		}else if(withinRange() && !isChecked){
-			checkisBlock();
-			isChecked=true;
-		} 
-	}
-
-
-	// Method that determines Type of Block
-	public boolean checkisBlock(){
-		colorProvider.fetchSample(colorData, 0);
-		if(colorData[0] > colorData[2]+0.02){
-			LCD.drawString("NOT BLOCK  ", 0, 7);
-			isBlock = false;
-			Sound.beep();
-			Sound.beep();
-		}else if(colorData[2] > 0.020){ //checks styrofoam
-			LCD.drawString("BLOCK      ", 0, 7);
-			isBlock = true;
-			coinSound();
-		}else{
-			LCD.drawString("NOT BLOCK  ", 0, 7);
-			isBlock = false;
-			Sound.beep();
-			Sound.beep();
-		}
-		return isBlock;
-	}	
-
 	//Coin sound!
 	public void coinSound(){
 		//Sound.playNote(a, 988, 100);
 		Sound.playNote(a, 1319, 300);
-	}
-
-	//Check if an object is within identification range
-	public boolean withinRange(){
-		if(distance<6.7 && distance>0){
-			return true;
-		}else
-			return false;
 	}
 
 	//Backing up method
