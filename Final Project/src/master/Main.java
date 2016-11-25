@@ -172,6 +172,13 @@ public class Main {
 //			Data[2] is Zone Lower Y
 //			Data[3] is Zone Upper X
 //			Data[4] is Zone Upper Y
+			
+//			Data[6] is Bad Zone Lower X
+//			Data[7] is Bad Zone Lower Y
+//			Data[8] is Bad Zone Upper X
+//			Data[9] is Bad Zone Upper Y
+
+			
 			corner=StartCorner.lookupCorner(Data[0]).getCooridinates();
 			searcher.setCorner(corner);
 			searcher.setGoodZone(new int[] {Data[1],Data[2],Data[3],Data[4]});
