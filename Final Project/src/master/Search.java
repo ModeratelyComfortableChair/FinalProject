@@ -73,7 +73,8 @@ public class Search extends Thread implements UltrasonicController{
 	private USPoller usUpper;
 	private double scanStartAngle;
 	private int[] corner = new int[2];
-	private int[] zone = new int[4];
+	private int[] goodZone = new int[4];
+	private int[] badZone = new int[4];
 
 
 	// Enum declaration/initialization
@@ -219,8 +220,8 @@ public class Search extends Thread implements UltrasonicController{
 								Sound.playNote(a, 440, 250);
 								moved = true;
 								blockCatch();
-								nav.travelTo(zone[0], zone[1]);
-								nav.turnTo(nav.getAngle(zone[0], zone[1], zone[2], zone[3], nav.getOrientation()));
+								nav.travelTo(goodZone[0], goodZone[1]);
+								nav.turnTo(nav.getAngle(goodZone[0], goodZone[1], goodZone[2], goodZone[3], nav.getOrientation()));
 								//lift1.rotate(-2450, true);
 								//lift2.rotate(-2450, false);
 								claw.rotateTo(0);
@@ -558,8 +559,12 @@ public class Search extends Thread implements UltrasonicController{
 	}
 
 	//Set zone
-	public void setZone(int[] b){
-		this.zone = b;
+	public void setGoodZone(int[] b){
+		this.goodZone = b;
+	}
+	
+	public void setBadZone(int[] b){
+		this.setBadZone(b);
 	}
 
 	// Inherited methods from UScontroller

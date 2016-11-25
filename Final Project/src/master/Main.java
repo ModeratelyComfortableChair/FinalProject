@@ -3,7 +3,6 @@
  */
 package master;
 
-import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
@@ -41,11 +40,7 @@ public class Main {
 	private static EV3LargeRegulatedMotor lift2 = null;
 	private static RegulatedMotor claw = null;
 	
-	//TODO Replace this with the comments below
-	private static final EV3LargeRegulatedMotor hook = null;	// = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
-	private static final EV3MediumRegulatedMotor turner = null; //new EV3MediumRegulatedMotor(LocalEV3.get().getPort("B"));	
-	
-	//TODO initialize other usPorts and colorPorts
+	private static RegulatedMotor[] motors = {leftMotor, rightMotor, lift1, lift2};
 
 	private static final Port colorBackPort = LocalEV3.get().getPort("S1");
 	private static final Port usUpperPort = LocalEV3.get().getPort("S3");
@@ -106,7 +101,7 @@ public class Main {
 		//Set up Escape thread
 		(new Thread(){
 			public void run(){
-				Escape.testForEscape();
+				Escape.testForEscape(motors);
 			}
 		}).start();
 		
@@ -178,7 +173,8 @@ public class Main {
 //			Data[4] is Zone Upper Y
 			corner=StartCorner.lookupCorner(Data[0]).getCooridinates();
 			searcher.setCorner(corner);
-			searcher.setZone(new int[] {Data[1],Data[2],Data[3],Data[4]});
+			searcher.setGoodZone(new int[] {Data[1],Data[2],Data[3],Data[4]});
+			searcher.setBadZone(new int[] {Data[6], Data[7], Data[8], Data[9]});
 			// start the odometer, the odometry display
 			odo.start();
 			odometryDisplay.start();
@@ -191,7 +187,7 @@ public class Main {
 			// start the odometer, the odometry display
 			corner= new int[]{0, 0};
 			searcher.setCorner(corner);
-			searcher.setZone(DEFAULT_ZONE);
+			searcher.setGoodZone(DEFAULT_ZONE);
 			odo.start();
 			odometryDisplay.start();
 			usLowerPoller.start();
