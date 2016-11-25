@@ -110,7 +110,7 @@ public class AvoidObstacle extends Thread {
 	}
 
 	public boolean clearPath(){
-		if(searcher.readUSDistance()<35){
+		if(searcher.usUpper.filterData()<35){
 			return false;
 		}else
 			return true;

@@ -69,12 +69,14 @@ public class Search extends Thread implements UltrasonicController{
 	private Navigation nav;
 	private LocalizationMaster localization;
 	private boolean localized = false;
-	private USPoller usLower;
-	private USPoller usUpper;
+	public USPoller usLower;
+	public USPoller usUpper;
 	private double scanStartAngle;
 	private int[] corner = new int[2];
 	private int[] goodZone = new int[4];
 	private int[] badZone = new int[4];
+	private boolean scanned=false;
+	private int numBlock=0;
 
 
 	// Enum declaration/initialization
@@ -261,6 +263,7 @@ public class Search extends Thread implements UltrasonicController{
 				usLower.disable();
 				nav.stopMotors();
 				nav.getOdometerInfo();
+				state=State.TRAVELLING;
 				break;
 
 			case TURNING:								    //TURNING STATE
