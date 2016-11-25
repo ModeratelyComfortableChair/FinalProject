@@ -46,7 +46,8 @@ public class Main {
 	private static final Port usUpperPort = LocalEV3.get().getPort("S3");
 	private static final Port usLowerPort = LocalEV3.get().getPort("S4");
 	
-	private static final int[] DEFAULT_ZONE = {100, 100, 200, 200}; 
+	private static final int[] DEFAULT_GOOD_ZONE = {100, 100, 200, 200}; 
+	private static final int[] DEFAULT_BAD_ZONE = {300, 300, 400, 400};
 	private static Port colorLeftPort = null;
 	private static Port colorRightPort = null;
 	private static SensorMode colorProvider;
@@ -187,7 +188,8 @@ public class Main {
 			// start the odometer, the odometry display
 			corner= new int[]{0, 0};
 			searcher.setCorner(corner);
-			searcher.setGoodZone(DEFAULT_ZONE);
+			searcher.setGoodZone(DEFAULT_GOOD_ZONE);
+			searcher.setBadZone(DEFAULT_BAD_ZONE);
 			odo.start();
 			odometryDisplay.start();
 			usLowerPoller.start();
