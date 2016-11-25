@@ -309,6 +309,8 @@ public class Search extends Thread implements UltrasonicController{
 					backUp();
 					// Create new AvoidObstacle thread every time
 					avoidance = new AvoidObstacle(this);
+					usLower.disable();
+					usUpper.enable();
 					avoidance.start();
 				}
 				break;
@@ -373,11 +375,9 @@ public class Search extends Thread implements UltrasonicController{
 //		lift2.rotate(-1470,false);
 		lift1.rotate(-1070,true);
 		lift2.rotate(-1070,false);
-		lift2.setAcceleration(80);
-		lift1.setAcceleration(80);
-		lift1.setSpeed(50);
-		lift2.setSpeed(50);
-		claw.rotateTo(45);
+		claw.setAcceleration(80);
+		claw.setSpeed(50);
+		claw.rotateTo(40);
 		lift1.rotate(-400,true);
 		lift2.rotate(-400,false);
 	}
@@ -392,10 +392,8 @@ public class Search extends Thread implements UltrasonicController{
 	}
 
 	public void grab() {
-		lift2.setAcceleration(80);
-		lift1.setAcceleration(80);
-		lift1.setSpeed(50);
-		lift2.setSpeed(50);
+		claw.setAcceleration(100);
+		claw.setSpeed(100);
 		claw.rotateTo(0);
 	}
 

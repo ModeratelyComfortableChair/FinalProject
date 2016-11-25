@@ -27,6 +27,8 @@ public class AvoidObstacle extends Thread {
 	private double WHEEL_RADIUS;
 	private double TRACK;
 	private boolean safe;
+	private boolean rightSafe;
+	private boolean leftSafe;
 	
 	//constructor
 	/**
@@ -40,6 +42,8 @@ public class AvoidObstacle extends Thread {
 		this.rightMotor = searcher.rightMotor;
 		this.WHEEL_RADIUS = searcher.WHEEL_RADIUS;
 		this.TRACK = searcher.TRACK;
+		this.rightSafe=true;
+		this.leftSafe=true;
 	}
 	
 	//obstacle avoidance - get around the blocks
@@ -48,16 +52,49 @@ public class AvoidObstacle extends Thread {
 	 * This method will run continuously until the robot is safe
 	 */
 	public void run(){
+		while(!safe){
+			if(rightSafe){
+				turn(90);
+				if(clearPath()){
+					forward(20);
+					turn(-90);
+					if(clearPath()){
+						forward(30);
+						safe=true;
+					}
+				}else{
+					turn(-90);
+					rightSafe=false;
+				}
+			}else if(leftSafe){
+				turn(-90);
+				if(clearPath()){
+					forward(20);
+					turn(90);
+					if(clearPath()){
+						forward(30);
+						safe=true;
+					}
+				}else{
+					turn(90);
+					leftSafe=false;
+				}				
+			}else{
+				turn(180);
+				forward(30);
+				safe=true;
+			}
+		}
 	}
 
-	//check if robot is 90 degrees past the initial angle
-	//it would mean that the robot made its way around the obstacle
-	public boolean isSafe(){
-		if(true){ //some condition to check if robot is safe
-			return true;
-		}else 
-			return false;
-	}
+//	//check if robot is 90 degrees past the initial angle
+//	//it would mean that the robot made its way around the obstacle
+//	public boolean isSafe(){
+//		if(true){ //some condition to check if robot is safe
+//			return true;
+//		}else 
+//			return false;
+//	}
 	
 	//returns boolean safe
 	public boolean resolved(){
@@ -72,7 +109,12 @@ public class AvoidObstacle extends Thread {
 		rightMotor.rotate(convertDistance(WHEEL_RADIUS, dist), false);
 	}
 
-	
+	public boolean clearPath(){
+		if(searcher.readUSDistance()<35){
+			return false;
+		}else
+			return true;
+	}
 	
 	//Turning method
 	public void turn(double theta){
