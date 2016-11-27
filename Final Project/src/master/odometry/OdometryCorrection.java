@@ -32,8 +32,8 @@ public class OdometryCorrection extends Thread {
 	private static final double SENSOR_OFFSET = 0.0;
 	private static final double TILE_WIDTH = 30.48;
 	private static final double BUFFER = 5.0;
-	private static final double ANGLE_TOLERANCE = 0.0;
-	private static final int MAX_LINE_COUNT = 9;
+	private static final double ANGLE_TOLERANCE = 19.0;
+	private static final int MAX_LINE_COUNT = 10;
 
 	/**
 	 * Constructor
@@ -228,11 +228,11 @@ public class OdometryCorrection extends Thread {
 	 * @return the number of horizontal lines the robot has theoretically crossed to get to its current position
 	 */
 	private int getYCount() {
-		int nY;
-		int y = odo.getY();
+		int nY = 0;
+		double y = odometer.getY();
 		for(int i = 0; i < MAX_LINE_COUNT; i++) {
-			upperBound = (i * TILE_WIDTH) + (TILE_WIDTH/2);
-			lowerBound = (i * TILE_WIDTH) - (TILE_WIDTH/2);
+			double upperBound = (i * TILE_WIDTH) + (TILE_WIDTH/2);
+			double lowerBound = (i * TILE_WIDTH) - (TILE_WIDTH/2);
 			if(y >= lowerBound && y <= upperBound) {
 				nY = i;
 				break;
@@ -246,11 +246,11 @@ public class OdometryCorrection extends Thread {
 	 * @return the number of horizontal lines the robot has theoretically crossed to get to its current position
 	 */
 	private int getXCount() {
-		int nX;
-		int x = odo.getX();
+		int nX = 0;
+		double x = odometer.getX();
 		for(int i = 0; i < MAX_LINE_COUNT; i++) {
-			upperBound = (i * TILE_WIDTH) + (TILE_WIDTH/2);
-			lowerBound = (i * TILE_WIDTH) - (TILE_WIDTH/2);
+			double upperBound = (i * TILE_WIDTH) + (TILE_WIDTH/2);
+			double lowerBound = (i * TILE_WIDTH) - (TILE_WIDTH/2);
 			if(x >= lowerBound && x <= upperBound) {
 				nX = i;
 				break;
