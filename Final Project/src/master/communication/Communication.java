@@ -43,10 +43,10 @@ public class Communication {
      * 2. TEAM_NUMBER: your project team number
      * */
  
-    private static final String SERVER_IP = "192.168.2.3";
+    private static final String SERVER_IP = "192.168.2.32";
     private static final int TEAM_NUMBER = 12;
 //  private static Integer corner;
-    private static Integer[] zoneData;
+    private static Integer[] zoneData = new Integer[5];
     private static TextLCD LCD = LocalEV3.get().getTextLCD();
    
     public Communication(){};
@@ -96,11 +96,6 @@ public class Communication {
                 zoneData[2]=t.get("LGZy");
                 zoneData[3]=t.get("UGZx");
                 zoneData[4]=t.get("UGZy");
-                zoneData[5]=t.get("CSC");
-                zoneData[6]=t.get("LRZx");
-                zoneData[7]=t.get("LRZy");
-                zoneData[8]=t.get("URZx");
-                zoneData[9]=t.get("URZy");
                
             }else if(t.get("CTN") == TEAM_NUMBER){
 //              corner = t.get("CSC");
@@ -109,11 +104,7 @@ public class Communication {
                 zoneData[2]=t.get("LRZy");
                 zoneData[3]=t.get("URZx");
                 zoneData[4]=t.get("URZy");
-                zoneData[5]=t.get("BSC");
-                zoneData[6]=t.get("LGZx");
-                zoneData[7]=t.get("LGZy");
-                zoneData[8]=t.get("UGZx");
-                zoneData[9]=t.get("UGZy");
+                
             }
         }
         return zoneData;

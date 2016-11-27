@@ -40,13 +40,13 @@ public class Main {
 	private static EV3LargeRegulatedMotor lift2 = null;
 	private static RegulatedMotor claw = null;
 	
-	private static RegulatedMotor[] motors = {leftMotor, rightMotor, lift1, lift2};
+	public static RegulatedMotor[] motors = {leftMotor, rightMotor, lift1, lift2};
 
 	private static final Port colorBackPort = LocalEV3.get().getPort("S1");
 	private static final Port usUpperPort = LocalEV3.get().getPort("S3");
 	private static final Port usLowerPort = LocalEV3.get().getPort("S4");
 	
-	private static final int[] DEFAULT_GOOD_ZONE = {100, 100, 200, 200}; 
+	private static final int[] DEFAULT_GOOD_ZONE = {60, 60, 120, 180}; 
 	private static final int[] DEFAULT_BAD_ZONE = {300, 300, 400, 400};
 	private static Port colorLeftPort = null;
 	private static Port colorRightPort = null;
@@ -182,7 +182,6 @@ public class Main {
 			corner=StartCorner.lookupCorner(Data[0]).getCooridinates();
 			searcher.setCorner(corner);
 			searcher.setGoodZone(new int[] {Data[1],Data[2],Data[3],Data[4]});
-			searcher.setBadZone(new int[] {Data[6], Data[7], Data[8], Data[9]});
 			// start the odometer, the odometry display
 			odo.start();
 			odometryDisplay.start();
@@ -196,7 +195,6 @@ public class Main {
 			corner= new int[]{0, 0};
 			searcher.setCorner(corner);
 			searcher.setGoodZone(DEFAULT_GOOD_ZONE);
-			searcher.setBadZone(DEFAULT_BAD_ZONE);
 			odo.start();
 			odometryDisplay.start();
 			usLowerPoller.start();

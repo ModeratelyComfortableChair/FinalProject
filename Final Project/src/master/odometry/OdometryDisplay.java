@@ -58,9 +58,10 @@ public class OdometryDisplay extends Thread {
 			odometer.getPosition(position, new boolean[] { true, true, true });
 
 			// display odometry information
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < 2; i++) {
 				t.drawString(formattedDoubleToString(position[i], 2), 3, i);
 			}
+			t.drawString(formattedDoubleToString(position[2]*(180.0/Math.PI), 2), 3, 2);
 			
 			// throttle the OdometryDisplay
 			displayEnd = System.currentTimeMillis();
