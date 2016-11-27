@@ -73,7 +73,7 @@ public class OdometryCorrection extends Thread {
 			
 			if (colorSample[0] <= LIGHT_SENSOR_MAX && colorSample[0] > LIGHT_SENSOR_MIN) {
 				
-				Sound.beep();				
+//				Sound.beep();				
 				theta = Math.toDegrees(odometer.getTheta());
 				newY = odometer.getY();
 				newX = odometer.getX();
@@ -105,6 +105,7 @@ public class OdometryCorrection extends Thread {
 							xCorrection = SENSOR_OFFSET*Math.sin(Math.toRadians(correctionAngle));
 							odometer.setX((TILE_WIDTH*nX)+ xCorrection); // x position correction						
 							Sound.buzz();
+							Sound.buzz();
 						}
 					}
 					
@@ -123,6 +124,7 @@ public class OdometryCorrection extends Thread {
 							
 							yCorrection = SENSOR_OFFSET*Math.sin(Math.toRadians(correctionAngle));
 							odometer.setY((TILE_WIDTH*nY)+ yCorrection); // y position correction
+							Sound.buzz();
 							Sound.buzz();
 						}
 					}

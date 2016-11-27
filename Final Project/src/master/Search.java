@@ -245,7 +245,7 @@ public class Search extends Thread implements UltrasonicController{
 								blockCount++;
 								nav.getOdometerInfo();
 								nav.setForwardSpeed(300);
-								if(blockCount == 2){
+								if(blockCount == 1){
 									state=State.TRAVELLING;
 									scanEnd = new Tile(findTile(odo.getX()), findTile(odo.getY()));
 									travelTo(scanEnd.getCenterX(), scanEnd.getCenterY());

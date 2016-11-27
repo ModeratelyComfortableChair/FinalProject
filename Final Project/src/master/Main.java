@@ -200,6 +200,8 @@ public class Main {
 //			searcher.setGoodZone(DEFAULT_GOOD_ZONE);
 			odo.start();
 			odometryDisplay.start();
+			odo.setX(15.24);
+			odo.setY(-15.24);
 			odoCorrect.start();
 			// spawn a new Thread to avoid SquareDriver.drive() from blocking
 			(new Thread() {
