@@ -33,6 +33,7 @@ public class OdometryCorrection extends Thread {
 	private static final double TILE_WIDTH = 30.48;
 	private static final double BUFFER = 5.0;
 	private static final double ANGLE_TOLERANCE = 0.0;
+	private static final int MAX_LINE_COUNT = 9;
 
 	/**
 	 * Constructor
@@ -77,14 +78,8 @@ public class OdometryCorrection extends Thread {
 				newX = odometer.getX();
 				distance = getDistance(newX, newY, oldX, oldY);
 				
-				if(positiveYDir(theta))
-					nY++;
-				else if(negativeYDir(theta))
-					nY--;	
-				else if(positiveXDir(theta))
-					nX++;
-				else if(negativeXDir(theta))
-					nX--;
+				nY = getYCount();
+				nX = getXCount();
 			
 				double side = TILE_WIDTH-(2*BUFFER);
 				double maxAngle = Math.toDegrees(Math.atan2(TILE_WIDTH, side));
@@ -227,5 +222,40 @@ public class OdometryCorrection extends Thread {
 		double diffY = y1-y2; 
 		return Math.sqrt((diffX * diffX) + (diffY * diffY));
 	}
-
+	
+	/**
+	 * Gets the nearest vertical line
+	 * @return the number of horizontal lines the robot has theoretically crossed to get to its current position
+	 */
+	private int getYCount() {
+		int nY;
+		int y = odo.getY();
+		for(int i = 0; i < MAX_LINE_COUNT; i++) {
+			upperBound = (i * TILE_WIDTH) + (TILE_WIDTH/2);
+			lowerBound = (i * TILE_WIDTH) - (TILE_WIDTH/2);
+			if(y >= lowerBound && y <= upperBound) {
+				nY = i;
+				break;
+			}
+		}
+		return nY;
+	}
+	
+	/**
+	 * Gets the nearest horizontal line
+	 * @return the number of horizontal lines the robot has theoretically crossed to get to its current position
+	 */
+	private int getXCount() {
+		int nX;
+		int x = odo.getX();
+		for(int i = 0; i < MAX_LINE_COUNT; i++) {
+			upperBound = (i * TILE_WIDTH) + (TILE_WIDTH/2);
+			lowerBound = (i * TILE_WIDTH) - (TILE_WIDTH/2);
+			if(x >= lowerBound && x <= upperBound) {
+				nX = i;
+				break;
+			}
+		}
+		return nX;
+	}
 }
