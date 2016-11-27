@@ -176,6 +176,7 @@ public class Search extends Thread implements UltrasonicController{
 						currentTile = new Tile(14, 14);
 					}
 				}
+				scanEnd = currentTile;
 				odo.setPosition(new double[]{corner[0],corner[1], angle}, new boolean[]{true, true, true});
 
 				nav.getOdometerInfo();
@@ -244,6 +245,7 @@ public class Search extends Thread implements UltrasonicController{
 								if(blockCount == 2){
 									state=State.TRAVELLING;
 									scanEnd = new Tile(findTile(odo.getX()), findTile(odo.getY()));
+									travelTo(scanEnd.getCenterX(), scanEnd.getCenterY());
 									break;
 								}
 							} else {
@@ -288,7 +290,7 @@ public class Search extends Thread implements UltrasonicController{
 				//Travel between seconds scan zone and collection zone
 				Tile collection = new Tile(findTile(goodZone[0]), findTile(goodZone[1]));
 				nav.getOdometerInfo();
-				Tile endZone = avoider.findPath(collection.getX(), collection.getY(), currentTile.getX(), currentTile.getY());
+				Tile endZone = avoider.findPath(collection.getX(), collection.getY(), scanEnd.getX(), scanEnd.getY());
 				//If the tile we wish to drop off at is clear.
 				if(collection.getX() != endZone.getX() || collection.getX() != collection.getY()){
 					collection = new Tile(findTile(goodZone[0] + 30), findTile(goodZone[0]));
