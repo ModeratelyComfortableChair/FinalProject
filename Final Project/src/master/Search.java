@@ -32,9 +32,10 @@ public class Search extends Thread implements UltrasonicController{
 	public double thetaDest;
 	public double WHEEL_RADIUS;
 	public double TRACK;
-	private static final int FORWARD_SPEED = 150, ROTATE_SPEED = 100, ACCELERATION = 1000, SCAN_SPEED = 20, SCAN_SIZE = 25, ID_SIZE = 35, ID_DISTANCE = 6, IGNORE_TIME = 1000;
+	private static final int FORWARD_SPEED = 150, ROTATE_SPEED = 100, ACCELERATION = 1000, SCAN_SPEED = 20, SCAN_SIZE = 25, ID_SIZE = 20, ID_DISTANCE = 6, IGNORE_TIME = 3000;
 	private static final double SCAN_RADIUS = 60.96, ID_RADIUS = 15;
 	private static final double SAFE_DETECTION = 40;
+	private static final double ID_TIME = 3000;
 	//other rotation speed
 	private static int RSPEED = 50, counter=0;
 
@@ -68,7 +69,6 @@ public class Search extends Thread implements UltrasonicController{
 	public Odometer odo;
 	private Navigation nav;
 	private LocalizationMaster localization;
-	private boolean localized = false;
 	public USPoller usLower;
 	public USPoller usUpper;
 	private double scanStartAngle;
@@ -76,11 +76,15 @@ public class Search extends Thread implements UltrasonicController{
 	private int[] goodZone = new int[4];
 	private int[] badZone = new int[4];
 	private boolean scanned=false;
-	private int numBlock=0;
+	private int blockCount=0;
+	private int stage = 2;
+	private int cornerNum;
+	private Tile scanEnd;
+	AvoidObstacle avoider;
 
 
 	// Enum declaration/initialization
-	enum State {INIT, SCAN, TURNING, TRAVELLING, IDENTIFY, EMERGENCY, TARGET};
+	enum State {INIT, SCAN, TRAVELLING};
 
 
 	// Navigation Constructor
@@ -122,12 +126,12 @@ public class Search extends Thread implements UltrasonicController{
 
 		//Localization
 		this.localization = localization;
-
+		avoider = new AvoidObstacle(nav, usUpper, odo);
 
 	}
 
-	// Setup Threads
-	AvoidObstacle avoidance = null;
+
+
 
 	// Run method
 	/**
@@ -136,37 +140,50 @@ public class Search extends Thread implements UltrasonicController{
 	 * that handles the search for styrofoam blocks
 	 */
 	public void run(){
+		
 		State state = State.INIT;
+		double angle = 0;
+		Tile currentTile = null;
+
 		while(true){
 			switch(state){
 			case INIT:
 				LCD.drawString("            ", 0, 5);
 				LCD.drawString("INIT", 0, 5);
-				double angle;
-				if(!localized){
-					odo.getPosition(new double[]{0, 0, 0}, new boolean[]{true, true, true});
-					nav.getOdometerInfo();
-					localization.localize();
-					localized = true;
-					if(corner[0] == 0){
-						if(corner[1] == 0){
-							angle = 0;
-						} else {
-							angle = 90;
-						}
-					}else{
-						if(corner[1] == 0){
-							angle = 270;
-						} else {
-							angle = 180;
-						}
+
+				odo.getPosition(new double[]{0, 0, 0}, new boolean[]{true, true, true});
+				nav.getOdometerInfo();
+				localization.localize();
+
+				if(corner[0] == 0){
+					if(corner[1] == 0){
+						angle = 0;
+						cornerNum = 1;
+						currentTile = new Tile(1, 1);
+					} else {
+						angle = 90;
+						cornerNum = 4;
+						currentTile = new Tile(1, 14);
 					}
-					odo.setPosition(new double[]{corner[0],corner[1], angle}, new boolean[]{true, true, true});
+				}else{
+					if(corner[1] == 0){
+						angle = 270;
+						cornerNum = 2;
+						currentTile = new Tile(14, 1);
+					} else {
+						angle = 180;
+						cornerNum = 3;
+						currentTile = new Tile(14, 14);
+					}
 				}
+				odo.setPosition(new double[]{corner[0],corner[1], angle}, new boolean[]{true, true, true});
+
 				nav.getOdometerInfo();
 				Victory(a);
 				LCD.drawString("Corner x: " + Integer.toString(corner[0]), 0, 6);
 				LCD.drawString("Corner y: " + Integer.toString(corner[1]), 0, 7);
+				nav.travelTo(currentTile.getCenterX(), currentTile.getCenterY(), false);
+				nav.turnTo(angle - nav.getOrientation());
 				state = State.SCAN;
 				break;
 
@@ -177,14 +194,11 @@ public class Search extends Thread implements UltrasonicController{
 				scanStartAngle = (odo.getTheta())*(180.0/Math.PI);
 				ScanQueue scanQueue = new ScanQueue(SCAN_SIZE, SCAN_RADIUS);
 				ScanQueue idQueue = new ScanQueue(ID_SIZE, ID_RADIUS);
-				ScanQueue closeQueue = new ScanQueue(3, 100);
-				double distance, startTime, currentTime;
+				double distance, startTime, currentTime, lastAngle;
 				boolean block = true;
 				boolean moved;
-				double[] scanLocation = {corner[0], corner[0], 0};
 				double[] idPosition = {0, 0, 0};
-				odo.getPosition(scanLocation, new boolean[] {true, true, true});
-				while(odo.getTheta()*(180.0/Math.PI) <= scanStartAngle + 90){
+				while(getAngleDiffCW( scanStartAngle, odo.getTheta()*(180.0/Math.PI)) < 90){
 					nav.rotateOnSpot(SCAN_SPEED);
 					distance = usLower.filterData();
 					moved = false;
@@ -194,13 +208,16 @@ public class Search extends Thread implements UltrasonicController{
 							coinSound();
 							usLower.disable();
 							double average = scanQueue.getAverage();
-							if(average < SAFE_DETECTION){
-								nav.turnTo(30);
+							if(average < SAFE_DETECTION && getAngleDiffCW( scanStartAngle, odo.getTheta()*(180.0/Math.PI)) > 30){
+								nav.turnTo(20);
 							}
 							double closingDistance = average - ID_DISTANCE;
+							lastAngle = odo.getTheta() * (180.0 / Math.PI);
 							if(closingDistance > 0){
-								nav.driveDistanceForward(closingDistance);
+								nav.setForwardSpeed(300);
+								nav.driveDistanceForward(closingDistance, false);
 								moved = true;
+								nav.setForwardSpeed(70);
 							}
 							scanQueue.clearQueue();
 							//Pull and update values for ID_TIME. Update block boolean if we detect it
@@ -208,7 +225,7 @@ public class Search extends Thread implements UltrasonicController{
 
 							startTime = System.currentTimeMillis();
 							currentTime = System.currentTimeMillis();
-							while(currentTime - startTime < IGNORE_TIME){
+							while(currentTime - startTime < ID_TIME){
 								distance = usUpper.filterData();
 								if(idQueue.checkAndAddUnder(distance)){
 									block = false;
@@ -217,31 +234,29 @@ public class Search extends Thread implements UltrasonicController{
 								currentTime = System.currentTimeMillis();
 							}
 							usUpper.disable();
-							//TODO write code for picking up block
 							if(block){
 								Sound.playNote(a, 440, 250);
-								moved = true;
+								moved = false;
 								blockCatch();
-								nav.travelTo(goodZone[0], goodZone[1]);
-								nav.turnTo(nav.getAngle(goodZone[0], goodZone[1], goodZone[2], goodZone[3], nav.getOrientation()));
-								//lift1.rotate(-2450, true);
-								//lift2.rotate(-2450, false);
-								claw.rotateTo(0);
-								break;
-								//claw.flt();
-
+								blockCount++;
+								nav.getOdometerInfo();
+								nav.setForwardSpeed(300);
+								if(blockCount == 2){
+									state=State.TRAVELLING;
+									scanEnd = new Tile(findTile(odo.getX()), findTile(odo.getY()));
+									break;
+								}
 							} else {
 								Sound.beep();
-
+								nav.driveDistanceBackward(10, false);
 							}
 							if(moved){
 								odo.getPosition(idPosition, new boolean[]{true, true, true});
 								nav.getOdometerInfo();
-								nav.travelTo(scanLocation[0], scanLocation[1]);
-								nav.turnTo(nav.getAngle(odo.getX(), odo.getY(), idPosition[0], idPosition[1], nav.getOrientation()));
-								if(block){
-									System.exit(0);
-								}
+								nav.setForwardSpeed(300);
+								nav.travelTo(currentTile.getCenterX(), currentTile.getCenterY(), false);
+								nav.setForwardSpeed(70);
+								nav.turnTo(lastAngle - nav.getOrientation());
 							}
 							idQueue.clearQueue();
 							usLower.enable();
@@ -266,55 +281,29 @@ public class Search extends Thread implements UltrasonicController{
 				state=State.TRAVELLING;
 				break;
 
-			case TURNING:								    //TURNING STATE
-				LCD.drawString("            ", 0, 5);
-				LCD.drawString("TURNING", 0, 5);
-				turnTo(getDestAngle());					//Updates Destination Angle and turn to that Angle
-				if(facingDest()){						//check if facing destination
-					state = State.TRAVELLING;
-				}
-				break;	
 			case TRAVELLING:								//TRAVELLING STATE
-				forward();
+
 				LCD.drawString("            ", 0, 5);
 				LCD.drawString("TRAVELLING", 0, 5);
-
-				xCurrent = odo.getX();
-				yCurrent = odo.getY();
-				if(((Math.abs(xCurrent-xDest)<1.3) && (Math.abs(yCurrent-yDest)<1.3))){ 										//Arrived to destination
-					mStop();								//Stop Driving
-					state = State.INIT;							
+				//Travel between seconds scan zone and collection zone
+				Tile collection = new Tile(findTile(goodZone[0]), findTile(goodZone[1]));
+				nav.getOdometerInfo();
+				Tile endZone = avoider.findPath(collection.getX(), collection.getY(), currentTile.getX(), currentTile.getY());
+				//If the tile we wish to drop off at is clear.
+				if(collection.getX() != endZone.getX() || collection.getX() != collection.getY()){
+					collection = new Tile(findTile(goodZone[0] + 30), findTile(goodZone[0]));
+					endZone = avoider.findPath(collection.getX(), collection.getY(), endZone.getX(), endZone.getY());
 				}
-				break;
-			case IDENTIFY:									// IDENTIFY STATE
-				
-				if(isChecked && isBlock){
+				nav.turnTo(nav.getAngle(odo.getX(), odo.getY(), collection.getCenterX()-30, collection.getCenterY(), nav.getOrientation()));
+				liftDownToDrop();
+				liftUp();
+				nav.getOdometerInfo();
+				avoider.findPath(currentTile.getX(), currentTile.getY(), collection.getX(), collection.getY());
+				nav.travelTo(corner[0], corner[1], false);
+				nav.turnTo(angle - nav.getOrientation());
+				System.exit(0);
 
-					state = State.TARGET;
-				}else if(isChecked && !isBlock){					//Check if there is an obstacle
-					notScanning=false;
-					state = State.EMERGENCY;
-					backUp();
-					// Create new AvoidObstacle thread every time
-					avoidance = new AvoidObstacle(this);
-					usLower.disable();
-					usUpper.enable();
-					avoidance.start();
-				}
 				break;
-			case EMERGENCY:									//EMERGENCY STATE
-				LCD.drawString("            ", 0, 5);
-				LCD.drawString("EMERGENCY", 0, 5);
-				break;
-			case TARGET:								//Catch block and travel to goal
-				LCD.drawString("            ", 0, 5);
-				LCD.drawString("TARGET", 0, 5);
-
-				//travelTo goal
-				
-				nav.travelTo(corner[0], corner[1]);
-				state = State.INIT;
-
 			}
 			try{											//Thread to sleep for 30miliseconds
 				Thread.sleep(30);
@@ -322,6 +311,10 @@ public class Search extends Thread implements UltrasonicController{
 				e.printStackTrace();
 			}
 		}
+	}
+
+	private int findTile(double coord) {
+		return (int)(coord/30 + 1);
 	}
 
 	public boolean isObject() {
@@ -336,47 +329,59 @@ public class Search extends Thread implements UltrasonicController{
 		return this.isDetected;
 	}
 
-	
+
 	public void blockCatch(){
-		liftDown();
+		liftDownToGrab();
 		int turnAngle=20;
-		int distForward=20;
+//		int distForward=20;
 		leftMotor.setSpeed(100);
 		rightMotor.setSpeed(100);
 		leftMotor.rotate(convertAngle(WHEEL_RADIUS, TRACK, turnAngle), true);
 		rightMotor.rotate(-convertAngle(WHEEL_RADIUS, TRACK, turnAngle), false);
 		leftMotor.rotate(-convertAngle(WHEEL_RADIUS, TRACK, turnAngle), true);
 		rightMotor.rotate(convertAngle(WHEEL_RADIUS, TRACK, turnAngle), false);
-		leftMotor.rotate(convertAngle(WHEEL_RADIUS, TRACK, distForward), true);
-		rightMotor.rotate(convertAngle(WHEEL_RADIUS, TRACK, distForward), false);
+		nav.driveDistanceForward(10, false);
 		grab();
 		liftUp();
 	}
-	
-	
-	public void liftDown() {
+
+
+	public void liftDownToGrab() {
 		lift1.setAcceleration(500);
 		lift2.setAcceleration(500);
 		lift1.setSpeed(100);
 		lift2.setSpeed(100);
-//		lift1.rotate(-1470,true);
-//		lift2.rotate(-1470,false);
-		lift1.rotate(-1070,true);
-		lift2.rotate(-1070,false);
+		//		lift1.rotate(-1470,true);
+		//		lift2.rotate(-1470,false);
+		lift1.rotate(-1020,true);
+		lift2.rotate(-1020,false);
 		claw.setAcceleration(80);
 		claw.setSpeed(50);
-		claw.rotateTo(40);
-		lift1.rotate(-400,true);
-		lift2.rotate(-400,false);
+		claw.rotateTo(60);
+		lift1.rotate(-550,true);
+		lift2.rotate(-550,false);
 	}
-	
+	public void liftDownToDrop(){
+		lift1.setAcceleration(500);
+		lift2.setAcceleration(500);
+		lift1.setSpeed(100);
+		lift2.setSpeed(100);
+		lift1.rotate(-1570,true);
+		lift2.rotate(-1570,false);
+		claw.setAcceleration(80);
+		claw.setSpeed(50);
+		claw.rotateTo(60);
+		//		lift1.rotate(-1470,true);
+		//		lift2.rotate(-1470,false);
+	}
+
 	public void liftUp(){
 		lift1.setAcceleration(500);
 		lift2.setAcceleration(500);
 		lift1.setSpeed(100);
 		lift2.setSpeed(100);
-		lift1.rotate(1470,true);
-		lift2.rotate(1470,false);
+		lift1.rotate(1570,true);
+		lift2.rotate(1570,false);
 	}
 
 	public void grab() {
@@ -555,6 +560,13 @@ public class Search extends Thread implements UltrasonicController{
 			return false;
 	}
 
+	public double getAngleDiffCW(double start, double end){
+		if(start > end){
+			return 360 - start + end;
+		} else {
+			return end - start;
+		}
+	}
 
 	//Setter method for corner
 	public void setCorner(int[] a){
@@ -565,10 +577,8 @@ public class Search extends Thread implements UltrasonicController{
 	public void setGoodZone(int[] b){
 		this.goodZone = b;
 	}
+
 	
-	public void setBadZone(int[] b){
-		this.setBadZone(b);
-	}
 
 	// Inherited methods from UScontroller
 	@Override

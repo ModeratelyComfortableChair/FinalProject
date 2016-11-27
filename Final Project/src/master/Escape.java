@@ -20,7 +20,9 @@ public class Escape {
 	public static void testForEscape(RegulatedMotor[] motors){
 		while(Button.waitForAnyEvent() != Button.ID_ESCAPE);
 		for(RegulatedMotor motor : motors){
-			motor.close();
+			if(motor != null){
+				motor.close();
+			}
 		}
 		System.exit(-1);
 	}

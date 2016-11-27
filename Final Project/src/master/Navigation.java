@@ -27,6 +27,7 @@ public class Navigation {
 	private Odometer odo;
 	private double leftRadius, rightRadius, width;
 	private boolean alert, turning, control, travelling, allowAlert, avoiding;
+	private int forwardSpeed = FORWARD_SPEED;
 
 	/**
 	 * Constructor
@@ -65,11 +66,29 @@ public class Navigation {
 		rightMotor.backward();
 	}
 	
-	public void driveDistanceForward(double distance){
+	public void driveDistanceForward(double distance, boolean letAlert){
+		leftMotor.setSpeed(forwardSpeed);									//Set Wheel speeds
+		rightMotor.setSpeed(forwardSpeed);
+		leftMotor.rotate(convertDistance(leftRadius, distance), true);		//Rotate Wheels
+		rightMotor.rotate(convertDistance(rightRadius, distance), true);
+		while(leftMotor.isMoving()){
+			if(alert && letAlert){
+				stopMotors();
+				return;
+			}
+		}
+	}
+	public void driveDistanceBackward(double distance, boolean letAlert){
 		leftMotor.setSpeed(FORWARD_SPEED);									//Set Wheel speeds
 		rightMotor.setSpeed(FORWARD_SPEED);
-		leftMotor.rotate(convertDistance(leftRadius, distance), true);		//Rotate Wheels
-		rightMotor.rotate(convertDistance(rightRadius, distance), false);
+		leftMotor.rotate(-convertDistance(leftRadius, distance), true);		//Rotate Wheels
+		rightMotor.rotate(-convertDistance(rightRadius, distance), true);
+		while(leftMotor.isMoving()){
+			if(alert && letAlert){
+				stopMotors();
+				return;
+			}
+		}
 	}
 
 	/**
@@ -78,8 +97,8 @@ public class Navigation {
 	 * @param x - desired x position
 	 * @param y - desired y position
 	 */
-	public void travelTo(double x, double y){
-		if(alert){
+	public void travelTo(double x, double y, boolean letAlert){
+		if(alert && letAlert){
 			return;
 		}
 		travelling = true;
@@ -91,7 +110,7 @@ public class Navigation {
 		rightMotor.rotate(convertDistance(rightRadius, distance), true);
 
 		while(leftMotor.isMoving()){
-			if(alert){
+			if(alert && letAlert){
 				stopMotors();
 				travelling = false;
 				return;
@@ -387,5 +406,13 @@ public class Navigation {
 	public void rotate(double theta){
 		leftMotor.rotate(convertAngle(leftRadius, width, theta), true);
 		rightMotor.rotate(-convertAngle(leftRadius, width, theta), false);
+	}
+
+	public int getForwardSpeed() {
+		return forwardSpeed;
+	}
+
+	public void setForwardSpeed(int forwardSpeed) {
+		this.forwardSpeed = forwardSpeed;
 	}
 }
