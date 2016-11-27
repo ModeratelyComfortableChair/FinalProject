@@ -31,7 +31,7 @@ public class LightLocalizer implements Localizer {
 		thetaX1 = thetaX2 = thetaY1 = thetaY2 = -12312;
 		boolean xFirst, yAbove;
 		yAbove = false;
-		nav.travelTo(0,0); 													//Travel to (0,0) and fix orientation to 0 degrees
+		nav.travelTo(0,0, false); 													//Travel to (0,0) and fix orientation to 0 degrees
 		nav.turnTo(-nav.getOrientation());
 		nav.setOrientation((int)(odo.getTheta()*(180.0/Math.PI)));
 		
@@ -127,7 +127,7 @@ public class LightLocalizer implements Localizer {
 		odo.setX(x);																				//Update x and y values
 		odo.setY(y);
 		nav.setXY(x, y);
-		nav.travelTo(0, 0);																			//Travel to (0,0) and reset orientation
+		nav.travelTo(0, 0, false);																			//Travel to (0,0) and reset orientation
 		nav.turnTo(-nav.getOrientation());
 		nav.setOrientation((int)(odo.getTheta()*(180.0/Math.PI)));
 		

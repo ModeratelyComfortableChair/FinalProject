@@ -21,6 +21,7 @@ import master.localization.LocalizationMaster;
 import master.localization.Localizer;
 import master.localization.USLocalizer;
 import master.odometry.Odometer;
+import master.odometry.OdometryCorrection;
 import master.odometry.OdometryDisplay;
 import master.poller.LightPoller;
 import master.poller.USPoller;
@@ -127,6 +128,7 @@ public class Main {
 		final TextLCD t = LocalEV3.get().getTextLCD();
 		Odometer odo = new Odometer(leftMotor, rightMotor, TRACK, WHEEL_RADIUS);
 		OdometryDisplay odometryDisplay = new OdometryDisplay(odo,t);
+		OdometryCorrection odoCorrect = new OdometryCorrection(odo, lightBackSensor);
 		Navigation nav = new Navigation(odo, leftMotor, rightMotor);
 		
 		USPoller usLowerPoller = new USPoller(usLowerSensor);
@@ -179,27 +181,35 @@ public class Main {
 //			Data[9] is Bad Zone Upper Y
 
 			
-			corner=StartCorner.lookupCorner(Data[0]).getCooridinates();
-			searcher.setCorner(corner);
-			searcher.setGoodZone(new int[] {Data[1],Data[2],Data[3],Data[4]});
+//			corner=StartCorner.lookupCorner(Data[0]).getCooridinates();
+//			searcher.setCorner(corner);
+//			searcher.setGoodZone(new int[] {Data[1],Data[2],Data[3],Data[4]});
 			// start the odometer, the odometry display
 			odo.start();
 			odometryDisplay.start();
+			odoCorrect.start();
 			usLowerPoller.start();
 			usUpperPoller.start();
 			searcher.start();
 			
 		}else{
 			
-			// start the odometer, the odometry display
-			corner= new int[]{0, 0};
-			searcher.setCorner(corner);
-			searcher.setGoodZone(DEFAULT_GOOD_ZONE);
+//			// start the odometer, the odometry display
+//			corner= new int[]{0, 0};
+//			searcher.setCorner(corner);
+//			searcher.setGoodZone(DEFAULT_GOOD_ZONE);
 			odo.start();
 			odometryDisplay.start();
-			usLowerPoller.start();
-			usUpperPoller.start();
-			searcher.start();
+			odoCorrect.start();
+			// spawn a new Thread to avoid SquareDriver.drive() from blocking
+			(new Thread() {
+				public void run() {
+					SquareDriver.drive(leftMotor, rightMotor, WHEEL_RADIUS, WHEEL_RADIUS, TRACK);
+				}
+			}).start();
+//			usLowerPoller.start();
+//			usUpperPoller.start();
+//			searcher.start();
 						
 		}
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);

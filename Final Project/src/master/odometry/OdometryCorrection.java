@@ -6,6 +6,7 @@ package master.odometry;
 import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.sensor.EV3ColorSensor;
+import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 import lejos.hardware.lcd.TextLCD;
@@ -27,9 +28,9 @@ public class OdometryCorrection extends Thread {
 	float[] colorSample;	
 	
 	private static final long CORRECTION_PERIOD = 10;
-	private static final double LIGHT_SENSOR_MIN = 0.1;
-	private static final double LIGHT_SENSOR_MAX = 0.4;
-	private static final double SENSOR_OFFSET = 0.0;
+	private static final double LIGHT_SENSOR_MIN = 0.15;
+	private static final double LIGHT_SENSOR_MAX = 0.3;
+	private static final double SENSOR_OFFSET = 6.2;
 	private static final double TILE_WIDTH = 30.48;
 	private static final double BUFFER = 5.0;
 	private static final double ANGLE_TOLERANCE = 19.0;
@@ -42,9 +43,9 @@ public class OdometryCorrection extends Thread {
 	 * @param LeftcolorSensor Left ColorSensor
 	 * @param RightcolorSensor Right ColorSensor
 	 */
-	public OdometryCorrection(Odometer odometer, EV3ColorSensor colorSensor) {
+	public OdometryCorrection(Odometer odometer, SensorModes colorSensor) {
 		this.odometer = odometer;
-		this.colorSensor = colorSensor;
+		this.colorSensor = (EV3ColorSensor) colorSensor;
 	}
 
 	/**

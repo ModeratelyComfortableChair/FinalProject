@@ -9,6 +9,7 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.motor.EV3MediumRegulatedMotor;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
+import lejos.utility.Delay;
 import master.localization.LocalizationMaster;
 import master.odometry.Odometer;
 import master.poller.USPoller;
@@ -207,7 +208,6 @@ public class Search extends Thread implements UltrasonicController{
 						if(scanQueue.checkAndAddUnder(distance)){
 							nav.stopMotors();
 							coinSound();
-							usLower.disable();
 							double average = scanQueue.getAverage();
 							if(average < SAFE_DETECTION && getAngleDiffCW( scanStartAngle, odo.getTheta()*(180.0/Math.PI)) > 30){
 								nav.turnTo(20);
@@ -221,6 +221,9 @@ public class Search extends Thread implements UltrasonicController{
 								nav.setForwardSpeed(70);
 							}
 							scanQueue.clearQueue();
+							scanCorrect();
+							usLower.disable();
+							Delay.msDelay(500);
 							//Pull and update values for ID_TIME. Update block boolean if we detect it
 							usUpper.enable();
 
@@ -580,7 +583,18 @@ public class Search extends Thread implements UltrasonicController{
 		this.goodZone = b;
 	}
 
-	
+	public void scanCorrect(){
+		nav.turnTo(wrapAngle(odo.getTheta()-45));
+		boolean needCorrect=false;
+		while(usLower.filterData()<10){
+			needCorrect=true;
+			nav.rotateOnSpot(SCAN_SPEED);
+		}
+		if(needCorrect){
+			nav.turnTo(wrapAngle(odo.getTheta()+15));
+		}
+		return;
+	}
 
 	// Inherited methods from UScontroller
 	@Override
