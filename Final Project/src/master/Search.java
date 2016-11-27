@@ -141,7 +141,6 @@ public class Search extends Thread implements UltrasonicController{
 	 * that handles the search for styrofoam blocks
 	 */
 	public void run(){
-		
 		State state = State.INIT;
 		double angle = 0;
 		Tile currentTile = null;
@@ -584,14 +583,14 @@ public class Search extends Thread implements UltrasonicController{
 	}
 
 	public void scanCorrect(){
-		nav.turnTo(wrapAngle(odo.getTheta()-45));
+		nav.rotate(-20);
 		boolean needCorrect=false;
-		while(usLower.filterData()<10){
+		while(usLower.filterData()>12){
 			needCorrect=true;
 			nav.rotateOnSpot(SCAN_SPEED);
 		}
 		if(needCorrect){
-			nav.turnTo(wrapAngle(odo.getTheta()+15));
+			nav.rotate(10);
 		}
 		return;
 	}
