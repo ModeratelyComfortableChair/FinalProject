@@ -4,12 +4,10 @@
 package master.odometry;
 
 import lejos.hardware.Sound;
-import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
-import lejos.utility.Delay;
-import lejos.hardware.lcd.TextLCD;
+
 /** 
  * OdometryCorrection handles correcting the position read by the 
  * Odometry using two Light sensors.
@@ -40,8 +38,7 @@ public class OdometryCorrection extends Thread {
 	 * Constructor
 	 * 
 	 * @param odometer Odometer Class
-	 * @param LeftcolorSensor Left ColorSensor
-	 * @param RightcolorSensor Right ColorSensor
+	 * @param colorSensor Left ColorSensor
 	 */
 	public OdometryCorrection(Odometer odometer, SensorModes colorSensor) {
 		this.odometer = odometer;
@@ -51,7 +48,7 @@ public class OdometryCorrection extends Thread {
 	/**
 	 * Method that extends from Thread. 
 	 * This is constantly running and correcting the odometer when
-	 * the robot is travelling vertically or horizontally.
+	 * the robot is traveling vertically or horizontally.
 	 */
 	public void run() {
 		long correctionStart, correctionEnd;
@@ -63,72 +60,72 @@ public class OdometryCorrection extends Thread {
 		double xCorrection = 0.0;
 		double yCorrection = 0.0;
 		double correctionAngle = 0.0;
-		int nX=0; 		
-		int nY=0; 				
+		boolean isYCorrection = false;
+		boolean isXCorrection = false;
+		int nX = 0; 		
+		int nY = 0; 				
 		
-		// turn off when nav to identify blocks?
 		while (true) {
 			correctionStart = System.currentTimeMillis();
-			colorProvider.fetchSample(colorSample, 0);		
+			colorProvider.fetchSample(colorSample, 0);
 			
-			if (colorSample[0] <= LIGHT_SENSOR_MAX && colorSample[0] > LIGHT_SENSOR_MIN) {
+			if (colorSample[0] <= LIGHT_SENSOR_MAX && colorSample[0] > LIGHT_SENSOR_MIN) {				
+				Sound.beep();				
 				
-//				Sound.beep();				
 				theta = Math.toDegrees(odometer.getTheta());
 				newY = odometer.getY();
 				newX = odometer.getX();
-				distance = getDistance(newX, newY, oldX, oldY);
-				
+				distance = getDistance(newX, newY, oldX, oldY);				
 				nY = getYCount();
-				nX = getXCount();
-			
-				double side = TILE_WIDTH-(2*BUFFER);
-				double maxAngle = Math.toDegrees(Math.atan2(TILE_WIDTH, side));
-				double maxDiagonal = Math.sqrt((TILE_WIDTH*TILE_WIDTH) + (side*side));
-				if((distance > TILE_WIDTH && distance < maxDiagonal) && (yDir(theta) || xDir(theta))) {
+				nX = getXCount();			
+				correctionAngle = Math.toDegrees(Math.acos(TILE_WIDTH/distance));
 					
-					correctionAngle = Math.toDegrees(Math.acos(TILE_WIDTH/distance));
-					
-					if(xDir(theta)) { // traveling parallel to y axis
-						if (newY > (BUFFER+(TILE_WIDTH*nY)) && newY < ((TILE_WIDTH-BUFFER)+(TILE_WIDTH*nY))) { // robot is not near black lines						
-							
+				if(xDir(theta)) { // traveling parallel to y axis
+					if (newY > (BUFFER+(TILE_WIDTH*nY)) && newY < ((TILE_WIDTH-BUFFER)+(TILE_WIDTH*nY))) { // robot is not near black lines						
+						if(isYCorrection) {
+							Sound.buzz();
+						
 							// corrects theta value
-							if(theta > 90 && theta < 90+maxAngle)
+							if(theta > 90 && theta < 90+ANGLE_TOLERANCE)
 								odometer.setTheta(Math.toRadians(90+correctionAngle));
-							else if(theta > 270 && theta < 270+maxAngle)
+							else if(theta > 270 && theta < 270+ANGLE_TOLERANCE)
 								odometer.setTheta(Math.toRadians(270+correctionAngle));
-							else if(theta > 270-maxAngle && theta < 270)
+							else if(theta > 270-ANGLE_TOLERANCE && theta < 270)
 								odometer.setTheta(Math.toRadians(270-correctionAngle));
-							else if(theta > 90-maxAngle && theta < 90)
+							else if(theta > 90-ANGLE_TOLERANCE && theta < 90)
 								odometer.setTheta(Math.toRadians(90-correctionAngle));
-							
+						
 							xCorrection = SENSOR_OFFSET*Math.sin(Math.toRadians(correctionAngle));
-							odometer.setX((TILE_WIDTH*nX)+ xCorrection); // x position correction						
-							Sound.buzz();
-							Sound.buzz();
+							odometer.setX((TILE_WIDTH*nX)+ xCorrection); // x position correction		
 						}
+						isYCorrection = true;
+						isXCorrection = false;
 					}
+				}
 					
-					else if(yDir(theta)) { // traveling parallel to x axis
-						if(newX > (BUFFER+(TILE_WIDTH*nX)) && newX < ((TILE_WIDTH-BUFFER)+(TILE_WIDTH*nX))) { // robot is not near black lines
-							
+				else if(yDir(theta)) { // traveling parallel to x axis
+					if(newX > (BUFFER+(TILE_WIDTH*nX)) && newX < ((TILE_WIDTH-BUFFER)+(TILE_WIDTH*nX))) { // robot is not near black lines
+						if(isXCorrection) {
+							Sound.buzz();
+						
 							// corrects theta value
-							if(theta < maxAngle)
+							if(theta < ANGLE_TOLERANCE)
 								odometer.setTheta(Math.toRadians(correctionAngle));
-							else if(theta > 180 && theta < 180+maxAngle)
+							else if(theta > 180 && theta < 180+ANGLE_TOLERANCE)
 								odometer.setTheta(Math.toRadians(180+correctionAngle));		
-							else if(theta > 360-maxAngle)
+							else if(theta > 360-ANGLE_TOLERANCE)
 								odometer.setTheta(Math.toRadians(360-correctionAngle));
-							else if(theta > 180-maxAngle && theta < 180)
+							else if(theta > 180-ANGLE_TOLERANCE && theta < 180)
 								odometer.setTheta(Math.toRadians(180-correctionAngle));
 							
 							yCorrection = SENSOR_OFFSET*Math.sin(Math.toRadians(correctionAngle));
 							odometer.setY((TILE_WIDTH*nY)+ yCorrection); // y position correction
-							Sound.buzz();
-							Sound.buzz();
 						}
+						isYCorrection = false;
+						isXCorrection = true;
 					}
 				}
+				
 				oldX = newX;
 				oldY = newY;
 			}								
@@ -170,7 +167,7 @@ public class OdometryCorrection extends Thread {
 	/**
 	 * Determines if the robot travels in Y direction
 	 * @param theta the current angle of the robot
-	 * @return true if the robot is travelling in Y direction
+	 * @return true if the robot is traveling in Y direction
 	 */
 	private boolean yDir(double theta) {
 		if(positiveYDir(theta) || negativeYDir(theta)) 
@@ -203,7 +200,7 @@ public class OdometryCorrection extends Thread {
 	/**
 	 * Determines if the robot travels in X direction
 	 * @param theta the current angle of the robot
-	 * @return true if the robot is travelling in X direction
+	 * @return true if the robot is traveling in X direction
 	 */
 	private boolean xDir(double theta) {
 		if(positiveXDir(theta) || negativeXDir(theta))
@@ -213,7 +210,7 @@ public class OdometryCorrection extends Thread {
 	}
 	
 	/**
-	 * Simple function appiles pythagorean theorem for two points and returns the distance between them
+	 * Simple function applies pythagorean theorem for two points and returns the distance between them
 	 * @param x1 initial x position
 	 * @param y1 initial y position
 	 * @param x2 desired x position
