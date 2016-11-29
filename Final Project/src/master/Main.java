@@ -126,7 +126,7 @@ public class Main {
 		
 		// some objects that need to be instantiated
 		final TextLCD t = LocalEV3.get().getTextLCD();
-		Odometer odo = new Odometer(leftMotor, rightMotor, TRACK, WHEEL_RADIUS);
+		final Odometer odo = new Odometer(leftMotor, rightMotor, TRACK, WHEEL_RADIUS);
 		OdometryDisplay odometryDisplay = new OdometryDisplay(odo,t);
 		OdometryCorrection odoCorrect = new OdometryCorrection(odo, lightBackSensor);
 		Navigation nav = new Navigation(odo, leftMotor, rightMotor);
@@ -194,24 +194,25 @@ public class Main {
 			
 		}else{
 			
-//			// start the odometer, the odometry display
-//			corner= new int[]{0, 0};
-//			searcher.setCorner(corner);
-//			searcher.setGoodZone(DEFAULT_GOOD_ZONE);
+			// start the odometer, the odometry display
+			corner= new int[]{300, 300};
+			searcher.setCorner(corner);
+			searcher.setGoodZone(DEFAULT_GOOD_ZONE);
 			odo.start();
 			odometryDisplay.start();
-			odo.setX(15.24);
-			odo.setY(-15.24);
 			odoCorrect.start();
+/*			odo.setX(15.24);
+			odo.setY(15.24);
 			// spawn a new Thread to avoid SquareDriver.drive() from blocking
-			(new Thread() {
-				public void run() {
-					SquareDriver.drive(leftMotor, rightMotor, WHEEL_RADIUS, WHEEL_RADIUS, TRACK);
+			(new Thread(){
+				public void run(){
+					SquareDriver.drive(leftMotor, rightMotor, odo.wheelRadius, odo.wheelRadius, odo.wheelBase);
 				}
 			}).start();
-//			usLowerPoller.start();
-//			usUpperPoller.start();
-//			searcher.start();
+	*/		
+			usLowerPoller.start();
+			usUpperPoller.start();
+			searcher.start();
 						
 		}
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);

@@ -64,7 +64,7 @@ public class USLocalizer implements Localizer{
 		getFilteredData();
 		if(getFilteredData() < MAX_DISTANCE){							//If we start off facing the wall
 			nav.rotateOnSpot((int) HIGH_ROTATION_SPEED);						// keep rotating cw until the robot doesn't see the wall
-			lowSpeed = true;
+			lowSpeed = false;
 			edge = getFilteredData();
 
 			while(edge < MAX_DISTANCE){
@@ -77,7 +77,7 @@ public class USLocalizer implements Localizer{
 
 		//Now we are definitely not facing the wall
 		nav.rotateOnSpot((int) HIGH_ROTATION_SPEED);
-		try {Thread.sleep(3000);} catch (InterruptedException e) {}
+		try {Thread.sleep(2000);} catch (InterruptedException e) {}
 		edge = getFilteredData();
 
 		while(edge > MAX_DISTANCE ){
@@ -85,37 +85,37 @@ public class USLocalizer implements Localizer{
 				if(lowSpeed){
 					nav.rotateOnSpot((int) HIGH_ROTATION_SPEED);
 					lowSpeed = false;
+				} else if(!lowSpeed){
+					nav.rotateOnSpot((int) LOW_ROTATION_SPEED);
+					lowSpeed = true;
 				}
-			} else if(!lowSpeed){
-				nav.rotateOnSpot((int) LOW_ROTATION_SPEED);
-				lowSpeed = true;
-			}
+			}	
 			edge = getFilteredData();
-		}																//Rotate cw until you face a wall
+		}//Rotate cw until you face a wall
 		nav.stopMotors();
 		lastEdge = edge;
 		angleA = (180.0/Math.PI)*odo.getTheta();						//then latch the angle
-		try {Thread.sleep(1000);} catch (InterruptedException e) {}
+		try {Thread.sleep(0);} catch (InterruptedException e) {}
 
 		nav.rotateOnSpot((int) -HIGH_ROTATION_SPEED);						// keep rotating ccw until the robot sees another wall
-		try {Thread.sleep(3000);} catch (InterruptedException e) {}		//Initial delay so we don't detect the same angle
+		try {Thread.sleep(2000);} catch (InterruptedException e) {}		//Initial delay so we don't detect the same angle
 		edge = getFilteredData();
 		while(edge > MAX_DISTANCE || edge > lastEdge){
 			if(edge > SPEED_BOUNDARY){
 				if(lowSpeed){
 					nav.rotateOnSpot((int) -HIGH_ROTATION_SPEED);
 					lowSpeed = false;
+				} else if(!lowSpeed){
+					nav.rotateOnSpot((int) -LOW_ROTATION_SPEED);
+					lowSpeed = true;
 				}
-			} else if(!lowSpeed){
-				nav.rotateOnSpot((int) -LOW_ROTATION_SPEED);
-				lowSpeed = true;
 			}
 			edge = getFilteredData();
 		}
 		nav.stopMotors();
 		lastEdge = edge;
 		angleB =  (180.0/Math.PI)*odo.getTheta();						//Latch second angle
-		try {Thread.sleep(1000);} catch (InterruptedException e) {}
+		try {Thread.sleep(0);} catch (InterruptedException e) {}
 
 		//Calculate orientation
 		if(angleA < angleB){
@@ -123,11 +123,12 @@ public class USLocalizer implements Localizer{
 		} else {
 			theta = (360 - angleA + angleB)/2;
 		}		
-		try {Thread.sleep(500);} catch (InterruptedException e) {}
+		try {Thread.sleep(0);} catch (InterruptedException e) {}
 		//Localize robot with respect to x and y
 		positionLocalization((int)theta);
 		usPoller.disable();
 	}
+
 
 	/**
 	 * positionLocalization is handles calculating the initial x and y position of the robot by
@@ -141,15 +142,15 @@ public class USLocalizer implements Localizer{
 		double x, y;
 
 		nav.turnTo(45 - theta);
-		try {Thread.sleep(500);} catch (InterruptedException e) {}				//Get X location with respect to wall
+		try {Thread.sleep(0);} catch (InterruptedException e) {}				//Get X location with respect to wall
 		x = MOMENT - TILE_WIDTH_CM + getFilteredData();
 
 		nav.turnTo(-90);
-		try {Thread.sleep(500);} catch (InterruptedException e) {}				//Get Y location with respect to wall
+		try {Thread.sleep(0);} catch (InterruptedException e) {}				//Get Y location with respect to wall
 		y = MOMENT - TILE_WIDTH_CM + getFilteredData();
 
 		//Face forward
-		try {Thread.sleep(500);} catch (InterruptedException e) {}
+		try {Thread.sleep(0);} catch (InterruptedException e) {}
 
 		odo.setPosition(new double [] {x, y, Math.PI}, new boolean [] {true, true, true});		//Update nav and odo, positions.
 		nav.getOdometerInfo();
