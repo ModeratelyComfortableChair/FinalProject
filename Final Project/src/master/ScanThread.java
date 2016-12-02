@@ -3,6 +3,16 @@ package master;
 import lejos.hardware.Sound;
 import master.poller.USPoller;
 
+/**
+ *	ScanThred runs the US Poller and sets Alert boolean the Navigation to true 
+ *	when it senses an object at a certain range. 
+ *	Extends thread to run simultaneously with other operations.
+ * 
+ * @author Jerome Marfleet
+ * @author Yu-Yueh Liu
+ * @since 2016-11-29
+ *
+ */
 public class ScanThread extends Thread{
 	private Navigation nav;
 	private USPoller us;
@@ -10,7 +20,15 @@ public class ScanThread extends Thread{
 	private boolean over;
 	private boolean end;
 	
-	
+	/**
+	 * Constructor 
+	 * 
+	 * @param nav Navigation Class
+	 * @param us US Poller
+	 * @param size size of ScanQueue
+	 * @param boundary Boundary for values in ScanQueue
+	 * @param above True to scan data greater than Boundary, False otherwise
+	 */
 	public ScanThread(Navigation nav, USPoller us, int size, double boundary, boolean above){
 		this.nav = nav;
 		this.us = us;
@@ -19,6 +37,9 @@ public class ScanThread extends Thread{
 		
 	}
 	
+	/**
+	 * Method extended from Thread
+	 */
 	public void run(){
 		while(!end){
 			if(over){
@@ -34,6 +55,10 @@ public class ScanThread extends Thread{
 			}
 		}
 	}
+	
+	/**
+	 * Method to Stop the thread
+	 */
 	public void end(){
 		end = true;
 	}

@@ -31,8 +31,11 @@ public class AvoidObstacle extends Thread {
 	private String lastAvoidance = "none";
 	//constructor
 	/**
-	 * Constructor
-	 * @param searcher Search class
+	 * Constructor 
+	 * 
+	 * @param nav Navigation Class
+	 * @param us US Poller Class
+	 * @param odo Odometer Class
 	 */
 	public AvoidObstacle(Navigation nav, USPoller us, Odometer odo) {
 		this.nav = nav;

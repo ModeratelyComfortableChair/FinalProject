@@ -3,6 +3,7 @@
  */
 package master;
 
+import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
@@ -16,7 +17,6 @@ import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 import master.communication.Communication;
-import master.localization.LightLocalizer;
 import master.localization.LocalizationMaster;
 import master.localization.Localizer;
 import master.localization.USLocalizer;
@@ -34,9 +34,7 @@ public class Main {
 	// Left motor connected to output A
 	// Right motor connected to output D
 	private static EV3LargeRegulatedMotor leftMotor = null;
-//			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 	private static  EV3LargeRegulatedMotor rightMotor = null;
-//			new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 	private static EV3LargeRegulatedMotor lift1 = null;
 	private static EV3LargeRegulatedMotor lift2 = null;
 	private static RegulatedMotor claw = null;
@@ -70,15 +68,7 @@ public class Main {
 	        	int [] a = {4, 25, 500, 7000, 5};	// Array that determines instrument: Piano
 	            Sound.playNote(a, 440, 200);
 	        	claw = bricks[i].createRegulatedMotor("A", 'L'); //Claw
-//	        	Port colorLeftPort = bricks[i].getPort("S1");	//Remote Sensor1
-//	        	Port colorRightPort = bricks[i].getPort("S2");	//Remote Sensor2
-//		        EV3ColorSensor csL = new EV3ColorSensor(colorLeftPort);
-//		        EV3ColorSensor csR = new EV3ColorSensor(colorRightPort);
-//				colorProvider = cs.getRedMode();
-//				colorSample = new float[colorProvider.sampleSize()];
 	        }
-	//        motors[1].rotateTo(50);
-	//		motors[1].rotateTo(0);
 	    }catch (Exception e){
 	    		Sound.beep();
 	            System.out.println("Got exception: \n" + e);
@@ -86,7 +76,6 @@ public class Main {
 	    }
     }
 	
-	//TODO Measure and obtain proper constants
 	//increasing radius reduces distance and turning angle
 	//increasing width increases turning
 	
@@ -116,13 +105,7 @@ public class Main {
 		
 		@SuppressWarnings("resource")
 		SensorModes lightBackSensor = new EV3ColorSensor(colorBackPort);
-		/*
-		@SuppressWarnings("resource")
-		SensorModes lightLeftSensor = new EV3ColorSensor(colorLeftPort);
-		
-		@SuppressWarnings("resource")
-		SensorModes lightRightSensor = new EV3ColorSensor(colorRightPort);
-			*/			
+
 		
 		// some objects that need to be instantiated
 		final TextLCD t = LocalEV3.get().getTextLCD();
@@ -137,14 +120,10 @@ public class Main {
 		
 		//Localization and it's localizer arguments
 		USLocalizer usLocalizer = new USLocalizer(odo, usLowerPoller, nav);
-		LightLocalizer lightLocalizer = new LightLocalizer(odo, lightBackPoller, nav);
-		LocalizationMaster localization = new LocalizationMaster(usLocalizer, lightLocalizer);
-		
+		LocalizationMaster localization = new LocalizationMaster(usLocalizer);
 		
 		Search searcher = new Search(odo, nav, lift1, lift2, claw, localization, usLowerPoller, usUpperPoller);
 		Communication com = new Communication();
-		
-		
 		
 		
 		do {
@@ -152,7 +131,7 @@ public class Main {
 			t.clear();
 
 			// ask the user whether the motors should navigate or to Navigate with obstacles
-			t.drawString("< 	Center    >", 0, 0);
+			t.drawString("<   Press Left  >", 0, 0);
 			t.drawString("_________________", 0, 1);
 			t.drawString("      	       ", 0, 2);
 			t.drawString("  	 GAME	   ", 0, 3);
@@ -179,11 +158,10 @@ public class Main {
 //			Data[7] is Bad Zone Lower Y
 //			Data[8] is Bad Zone Upper X
 //			Data[9] is Bad Zone Upper Y
-
 			
-//			corner=StartCorner.lookupCorner(Data[0]).getCooridinates();
-//			searcher.setCorner(corner);
-//			searcher.setGoodZone(new int[] {Data[1],Data[2],Data[3],Data[4]});
+			corner=StartCorner.lookupCorner(Data[0]).getCooridinates();
+			searcher.setCorner(corner);
+			searcher.setGoodZone(new int[] {Data[1],Data[2],Data[3],Data[4]});
 			// start the odometer, the odometry display
 			odo.start();
 			odometryDisplay.start();
@@ -193,6 +171,7 @@ public class Main {
 			searcher.start();
 			
 		}else{
+			//To run the robot without WiFi
 			
 			// start the odometer, the odometry display
 			corner= new int[]{300, 300};
@@ -201,15 +180,6 @@ public class Main {
 			odo.start();
 			odometryDisplay.start();
 			odoCorrect.start();
-/*			odo.setX(15.24);
-			odo.setY(15.24);
-			// spawn a new Thread to avoid SquareDriver.drive() from blocking
-			(new Thread(){
-				public void run(){
-					SquareDriver.drive(leftMotor, rightMotor, odo.wheelRadius, odo.wheelRadius, odo.wheelBase);
-				}
-			}).start();
-	*/		
 			usLowerPoller.start();
 			usUpperPoller.start();
 			searcher.start();

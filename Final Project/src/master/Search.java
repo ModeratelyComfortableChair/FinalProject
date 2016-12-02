@@ -6,31 +6,25 @@ package master;
 import lejos.hardware.Sound;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
-import lejos.hardware.motor.EV3MediumRegulatedMotor;
 import lejos.robotics.RegulatedMotor;
-import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 import master.localization.LocalizationMaster;
 import master.odometry.Odometer;
 import master.poller.USPoller;
-import master.poller.UltrasonicController;
 
 /**
- * Search will constantly search once the robot finishes Localizing to (0,0)
+ * Search will perform Scanning once the robot finishes Localizing to (0,0)
+ * Once a block is captured, it will move to the right zone to drop the block
+ * and come back to the starting corner.
  * 
  * @author Yu-Yueh Liu
- * @version 1.0
- * @since 2016-11-07
+ * @author Jerome Marfleet
+ * @version 2.0
+ * @since 2016-11-28
  *
  */
-public class Search extends Thread implements UltrasonicController{
+public class Search extends Thread{
 	// Constants for navigation 
-	private double xCurrent;
-	private double yCurrent;
-	public double thetaCurrent;
-	private double xDest;
-	private double yDest;
-	public double thetaDest;
 	public double WHEEL_RADIUS;
 	public double TRACK;
 	private static final int FORWARD_SPEED = 150, ROTATE_SPEED = 100, ACCELERATION = 1000, SCAN_SPEED = 20, SCAN_SIZE = 25, ID_SIZE = 20, ID_DISTANCE = 6, IGNORE_TIME = 3000;
@@ -50,19 +44,6 @@ public class Search extends Thread implements UltrasonicController{
 	//
 	public double distObject, xObject, yObject;
 	private double distance, rangeObject = 50;
-
-	//Variable for LightSensor
-	private float[] colorData;
-	private SampleProvider colorProvider;
-
-	// Boolean variables
-	private boolean isNavigating = false;
-	private boolean isObject = false;
-	public boolean isChecked = false;
-	private boolean isBlock = false;
-	public boolean isAvoiding = false;
-	public boolean isDetected;
-	public boolean notScanning = true;
 
 	// Initialization of some variables
 	public EV3LargeRegulatedMotor leftMotor, rightMotor, lift1, lift2; 	//They are public because AvoidObstacle calls them
@@ -94,18 +75,16 @@ public class Search extends Thread implements UltrasonicController{
 	 * 
 	 * @param odometer Odometer Class
 	 * @param nav Navigation Class
-	 * @param turner
-	 * @param hook
-	 * @param colorSensor Color Sensor Object
-	 * @param colorData Data from Color Sensor
+	 * @param lift1 Pulley Motor 1
+	 * @param lift2 Pulley Motor 2
+	 * @param claw Claw motor
 	 * @param localization Localization Class
+	 * @param usLower Lower US Sensor
+	 * @param usHigher Upper Us Sensor
 	 */
 	public Search(Odometer odometer, Navigation nav, EV3LargeRegulatedMotor lift1, EV3LargeRegulatedMotor lift2,
 			RegulatedMotor claw, LocalizationMaster localization, USPoller usLower, USPoller usHigher) {
 		//Set variables
-		this.xCurrent = 0;
-		this.yCurrent = 0;
-		this.thetaCurrent = 0;
 		this.odo = odometer;
 		this.nav = nav;
 		this.WHEEL_RADIUS = odometer.wheelRadius;
@@ -130,8 +109,6 @@ public class Search extends Thread implements UltrasonicController{
 		avoider = new AvoidObstacle(nav, usUpper, odo);
 
 	}
-
-
 
 
 	// Run method
@@ -247,7 +224,7 @@ public class Search extends Thread implements UltrasonicController{
 								if(blockCount == 1){
 									state=State.TRAVELLING;
 									scanEnd = new Tile(findTile(odo.getX()), findTile(odo.getY()));
-									travelTo(scanEnd.getCenterX(), scanEnd.getCenterY());
+									nav.travelTo(scanEnd.getCenterX(), scanEnd.getCenterY(), false);
 									break;
 								}
 							} else {
@@ -321,23 +298,9 @@ public class Search extends Thread implements UltrasonicController{
 		return (int)(coord/30.48 + 1);
 	}
 
-	public boolean isObject() {
-		return isObject;
-	}
-
-	public boolean notScanning(){
-		return this.notScanning;
-	}
-
-	public boolean isDetected(){
-		return this.isDetected;
-	}
-
-
 	public void blockCatch(){
 		liftDownToGrab();
 		int turnAngle=20;
-//		int distForward=20;
 		leftMotor.setSpeed(100);
 		rightMotor.setSpeed(100);
 		leftMotor.rotate(convertAngle(WHEEL_RADIUS, TRACK, turnAngle), true);
@@ -355,8 +318,6 @@ public class Search extends Thread implements UltrasonicController{
 		lift2.setAcceleration(500);
 		lift1.setSpeed(100);
 		lift2.setSpeed(100);
-		//		lift1.rotate(-1470,true);
-		//		lift2.rotate(-1470,false);
 		lift1.rotate(-1020,true);
 		lift2.rotate(-1020,false);
 		claw.setAcceleration(80);
@@ -375,8 +336,6 @@ public class Search extends Thread implements UltrasonicController{
 		claw.setAcceleration(80);
 		claw.setSpeed(50);
 		claw.rotateTo(60);
-		//		lift1.rotate(-1470,true);
-		//		lift2.rotate(-1470,false);
 	}
 
 	public void liftUp(){
@@ -394,124 +353,12 @@ public class Search extends Thread implements UltrasonicController{
 		claw.rotateTo(0);
 	}
 
-	// Return Object's X-coordinate
-	public double targetX(double dist){
-		double Theta = odo.getTheta();								// Angle of robot is facing:
-		if(Theta>=0 && Theta<=90){										// Top right quadrant
-			xObject=odo.getX()+(Math.sin(Math.toRadians(Theta))*dist);
-		}else if(Theta>90 && Theta <=180){								// Bottom right quadrant
-			xObject=odo.getX()+(Math.sin(Math.toRadians(90-(Theta-90)))*dist);
-		}else if(Theta>180 && Theta <=270){								// Bottom left quadrant
-			xObject=odo.getX()-(Math.sin(Math.toRadians(Theta-180))*dist);
-		}else if(Theta>270 && Theta <=359){								// Top left quadrant
-			xObject=odo.getX()-(Math.sin(Math.toRadians(90-(Theta-270)))*dist);
-		}
-		return xObject;
-	}
-
-	// Return Object's Y-coordinate
-	public double targetY(double dist){
-		double Theta = odo.getTheta();								// Angle of robot is facing:
-		if(Theta>=0 && Theta<=90){										// Top right quadrant
-			yObject=odo.getY()+(Math.sin(Math.toRadians(90-Theta))*dist);
-		}else if(Theta>90 && Theta <=180){								// Bottom right quadrant
-			yObject=odo.getY()-(Math.sin(Math.toRadians(Theta-90))*dist);
-		}else if(Theta>180 && Theta <=270){								// Bottom left quadrant
-			yObject=odo.getY()-(Math.sin(Math.toRadians(90-(Theta-180)))*dist);
-		}else if(Theta>270 && Theta <=359){								// Top left quadrant
-			yObject=odo.getY()+(Math.sin(Math.toRadians(Theta-270))*dist);
-		}
-		return yObject;
-	}
-
-	// Check if out of bound
-	public boolean OoB(double x, double y){
-		if(x<-15 || x>75 || y<-15 || y>75){
-			return true;
-		}else
-			return false;
-	}
-
-
 	//Coin sound!
 	public void coinSound(){
 		//Sound.playNote(a, 988, 100);
 		Sound.playNote(a, 1319, 300);
 	}
-
-	//Backing up method
-	public void backUp(){
-		while(distance < 12){
-			leftMotor.setSpeed(100);
-			rightMotor.setSpeed(100);
-			leftMotor.backward();
-			rightMotor.backward();
-		}
-		leftMotor.setSpeed(0);
-		rightMotor.setSpeed(0);
-	}
-
-	//travelTo sets (x,y) and angle of destination 
-	public void travelTo(double x, double y){
-		xDest = x;
-		yDest = y;
-		yCurrent = odo.getY();
-		xCurrent = odo.getX();
-		thetaDest = Math.toDegrees(Math.atan2((xDest-xCurrent), (yDest-yCurrent)));
-		isNavigating = true;
-	}
-
-	//determine to which angle the robot has to turn to
-	public void turnTo(double theta){
-		//
-		isNavigating = true;
-		double deltaTheta = ((theta) - (odo.getTheta()));
-		if(Math.abs(deltaTheta) < 180){
-			//deltaTheta
-			turn(deltaTheta);
-		}else if(deltaTheta < -180){
-			deltaTheta += 360;
-			turn(deltaTheta);
-			//turns right
-		}	
-		else if(deltaTheta > 180){
-			deltaTheta -= 360;
-			//turns left
-			turn(deltaTheta);
-		}
-		thetaCurrent = odo.getTheta();
-	}	
-
-	//Turning method
-	public void turn(double theta){
-		leftMotor.setAcceleration(500);
-		rightMotor.setAcceleration(500);
-		leftMotor.setSpeed(ROTATE_SPEED);
-		rightMotor.setSpeed(ROTATE_SPEED);
-		leftMotor.rotate(convertAngle(WHEEL_RADIUS, TRACK, theta), true);
-		rightMotor.rotate(-convertAngle(WHEEL_RADIUS, TRACK, theta), false);
-	}
-
-	//Move forward method
-	public void forward(){
-		isNavigating = true;
-		xCurrent = odo.getX();
-		yCurrent = odo.getY();
-		leftMotor.setAcceleration(500);
-		rightMotor.setAcceleration(500);
-		leftMotor.setSpeed(FORWARD_SPEED+1);
-		rightMotor.setSpeed(FORWARD_SPEED);
-		leftMotor.forward();
-		rightMotor.forward();
-	}
-
-	//Method for motors to stop at the same time
-	public void mStop(){
-		isNavigating = false;
-		leftMotor.stop(true);
-		rightMotor.stop(true);
-	}
-
+	
 	//convert distance to the angle of rotation of the wheels in degrees
 	public int convertDistance(double radius, double distance) {
 		return (int) ((180.0 * distance) / (Math.PI * radius));
@@ -520,48 +367,6 @@ public class Search extends Thread implements UltrasonicController{
 	//convert cart angle to the angle of rotation of the wheels in degrees
 	public int convertAngle(double radius, double width, double angle) {
 		return convertDistance(radius, Math.PI * width * angle / 360.0);
-	}
-
-	//Wrap Angle method
-	public double wrapAngle(double angle){
-		if(angle<0){
-			angle+=360;
-		}else if(angle>360){
-			angle-=360;
-		}
-		return angle;
-	}
-
-	//Updates the destination angle from current position
-	public double getDestAngle(){
-		yCurrent = odo.getY();
-		xCurrent = odo.getX();
-		thetaDest = Math.toDegrees(Math.atan2((xDest-xCurrent), (yDest-yCurrent)));
-		return thetaDest;
-	}
-
-
-
-	// Boolean Methods
-	// Checking methods
-
-	//Check if robot is navigating
-	public boolean isNavigating(){
-		return isNavigating;	
-	}
-
-	public void setNavigating(boolean a){
-		isNavigating = a;
-	}
-
-	//Check if robot is facing angle of destination
-	public boolean facingDest(){
-		thetaCurrent = (odo.getTheta());
-		//System.out.println("       BBB:"+(int)wrapAngle(thetaDest));
-		if(Math.abs(thetaCurrent-wrapAngle(thetaDest))<2){
-			return true;
-		}else 
-			return false;
 	}
 
 	public double getAngleDiffCW(double start, double end){
@@ -594,29 +399,7 @@ public class Search extends Thread implements UltrasonicController{
 		}
 		return;
 	}
-
-	// Inherited methods from UScontroller
-	@Override
-	public void processUSData(double distance) {
-		this.distance = distance;
-		if(!notScanning){ 
-			if(this.distance < rangeObject && this.distance > 3){
-				distObject = this.distance;
-				LCD.drawString("OBJECT DETECTED", 0, 6);
-				isDetected = true;
-			}else{
-				LCD.drawString("              ", 0, 7);
-				isChecked=false;
-				LCD.drawString("Nothing         ", 0, 6);
-				isDetected = false;
-			}
-		}
-	}
-
-	@Override
-	public double readUSDistance() {
-		return this.distance;
-	}
+	
 	private static void Victory(int[] a){
 		Sound.playNote(a, 440, 110);
 		Sound.playNote(a, 587, 110);

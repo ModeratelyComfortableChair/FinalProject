@@ -12,7 +12,7 @@ import master.odometry.Odometer;
  * @author Jerome Marfleet
  * @author Yu-Yueh Liu
  * @version 1.0
- * @since 2016-11-06
+ * @since 2016-11-29
  *
  */
 public class Navigation {
@@ -66,6 +66,11 @@ public class Navigation {
 		rightMotor.backward();
 	}
 	
+	/**
+	 * Drive forward for a certain distance 
+	 * @param distance Distance to move forward
+	 * @param letAlert Boolean to stop the motors: True when obstacle is seen, False otherwise
+	 */
 	public void driveDistanceForward(double distance, boolean letAlert){
 		leftMotor.setSpeed(forwardSpeed);									//Set Wheel speeds
 		rightMotor.setSpeed(forwardSpeed);
@@ -78,6 +83,12 @@ public class Navigation {
 			}
 		}
 	}
+	
+	/**
+	 * Drive backward for a certain distance 
+	 * @param distance Distance to move backward
+	 * @param letAlert Boolean to stop the motors: True when obstacle is seen, False otherwise
+	 */
 	public void driveDistanceBackward(double distance, boolean letAlert){
 		leftMotor.setSpeed(FORWARD_SPEED);									//Set Wheel speeds
 		rightMotor.setSpeed(FORWARD_SPEED);
@@ -178,7 +189,6 @@ public class Navigation {
 	 * @param orientation - current angle of the robot
 	 * @return integer of the angle needed to rotate in order to face new position
 	 */
-
 	public int getAngle(double x1, double y1, double x2, double y2, int orientation){
 		double diffX = x2 - x1;
 		double diffY = y2 - y1;
@@ -403,15 +413,27 @@ public class Navigation {
 	}
 	
 	//rotate method
+	/**
+	 * Rotate robot by an angle
+	 * @param theta Angle of rotation
+	 */
 	public void rotate(double theta){
 		leftMotor.rotate(convertAngle(leftRadius, width, theta), true);
 		rightMotor.rotate(-convertAngle(leftRadius, width, theta), false);
 	}
 
+	/**
+	 * Getter method for the forwardSpeed variable
+	 * @return the forwardSpeed variable
+	 */
 	public int getForwardSpeed() {
 		return forwardSpeed;
 	}
 
+	/**
+	 * Setter method for the forwardSpeed variable
+	 * @param forwardSpeed int value of the speed
+	 */
 	public void setForwardSpeed(int forwardSpeed) {
 		this.forwardSpeed = forwardSpeed;
 	}

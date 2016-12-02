@@ -10,6 +10,11 @@
 */
 package master.wifi;
 
+/**
+ * 
+ * Enum to determine the StartCorner of the Robot
+ *
+ */
 public enum StartCorner {
 	BOTTOM_LEFT(1, 0, 0, "BL"), BOTTOM_RIGHT(2, 300, 0, "BR"), TOP_RIGHT(3, 300, 300, "TR"), TOP_LEFT(4, 0, 300,
 			"TL"), NULL(0, 0, 0, "NULL");

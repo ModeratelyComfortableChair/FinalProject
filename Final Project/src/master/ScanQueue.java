@@ -4,7 +4,7 @@ package master;
  * ScanQueue takes values, mainly from a USPoller, and places them in a queue. It can also return whether or not those values are all under a certain value.
  * @author Jerome Marfleet
  * @version 1.0
- * @since 2016-11-13
+ * @since 2016-11-29
  */
 public class ScanQueue {
 	private int queueSize, count;
@@ -66,6 +66,13 @@ public class ScanQueue {
 			return checkQueueUnder();
 		}
 	}
+	
+	/**
+	 * 
+	 * @param distance
+	 * @return adds a new value to the queue, and returns true if the queue is filled and every value is above the boundary
+	 *
+	 */
 	public boolean checkAndAddOver(double distance){
 		if(distance == 0){
 			return false;
@@ -100,19 +107,24 @@ public class ScanQueue {
 			return false;
 		} 
 		for(int i = 0; i < queueSize; i++){
-			if(queue[i] > boundary){
+			if(queue[i] < boundary){
 				return false;
 			}
 		}
 		
 		return true;
 	}
+	
+	/**
+	 * Checks the queue to see if it is filled, and every value is above the boundary
+	 * @return true if queue is filled and every value is above boundary. false otherwise.
+	 */
 	public boolean checkQueueOver(){
 		if(count < queueSize){
 			return false;
 		} 
 		for(int i = 0; i < queueSize; i++){
-			if(queue[i] < boundary){
+			if(queue[i] > boundary){
 				return false;
 			}
 		}

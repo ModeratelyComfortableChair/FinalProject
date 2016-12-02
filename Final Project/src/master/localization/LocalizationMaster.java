@@ -6,23 +6,21 @@ package master.localization;
  * 
  * @author Jerome Marfleet
  * @author Yu-Yueh Liu
- * @version 1.0
+ * @version 2.0
  * @since 2016-11-06
  *
  */
 public class LocalizationMaster {
 
-	private Localizer usLocalizer, lightLocalizer;
+	private Localizer usLocalizer;
 	
 	/**
 	 * Constructor
 	 * 
 	 * @param usLocalizer
-	 * @param lightLocalizer
 	 */
-	public LocalizationMaster(USLocalizer usLocalizer, LightLocalizer lightLocalizer){
+	public LocalizationMaster(USLocalizer usLocalizer){
 		this.usLocalizer = usLocalizer;
-		this.lightLocalizer = lightLocalizer;
 	}
 	
 	/**
